@@ -32,19 +32,15 @@ class Notifications
     {
         $this->CI = &get_instance();
 
-        $this->CI->load->model('admins_model');
         $this->CI->load->model('appointments_model');
-        $this->CI->load->model('providers_model');
-        $this->CI->load->model('secretaries_model');
-        $this->CI->load->model('settings_model');
-
-        $this->CI->load->library('email_messages');
         $this->CI->load->library('ics_file');
-        $this->CI->load->library('timezones');
     }
 
     /**
      * Send the required notifications, related to an appointment creation/modification.
+     *
+     * This method now dispatches an event asynchronously instead of sending emails directly.
+     * The actual email sending is handled by EmailNotificationListener.
      *
      * @param array $appointment Appointment data.
      * @param array $service Service data.
@@ -62,157 +58,49 @@ class Notifications
         bool $manage_mode = false,
     ): void {
         try {
-            $current_language = config('language');
+            $this->CI->load->library('event_dispatcher');
 
-            $customer_link = site_url('booking/reschedule/' . $appointment['hash']);
-
-            $provider_link = site_url('calendar/reschedule/' . $appointment['hash']);
-
+            // Generate ICS stream for calendar attachment
             $ics_stream = $this->CI->ics_file->get_stream($appointment, $service, $provider, $customer);
 
-            // Notify customer.
-            $send_customer =
-                !empty($customer['email']) && filter_var(setting('customer_notifications'), FILTER_VALIDATE_BOOLEAN);
-
-            if ($send_customer === true) {
-                config(['language' => $customer['language']]);
-                $this->CI->lang->load('translations');
-                $subject = $manage_mode ? lang('appointment_details_changed') : lang('appointment_booked');
-                $message = $manage_mode ? '' : lang('thank_you_for_appointment');
-
-                try {
-                    $this->CI->email_messages->send_appointment_saved(
-                        $appointment,
-                        $provider,
-                        $service,
-                        $customer,
-                        $settings,
-                        $subject,
-                        $message,
-                        $customer_link,
-                        $customer['email'],
-                        $ics_stream,
-                        $customer['timezone'],
-                    );
-                } catch (Throwable $e) {
-                    $this->log_exception($e, 'appointment-saved to customer', $appointment['id'] ?? null);
-                }
-            }
-
-            // Notify provider.
-            $send_provider = filter_var(
-                $this->CI->providers_model->get_setting($provider['id'], 'notifications'),
-                FILTER_VALIDATE_BOOLEAN,
+            // Dispatch event asynchronously - listeners will handle the actual notifications
+            $this->CI->event_dispatcher->dispatch(
+                Event_dispatcher::EVENT_APPOINTMENT_SAVED,
+                [
+                    'event' => 'appointment.saved',
+                    'appointment' => $appointment,
+                    'service' => $service,
+                    'provider' => $provider,
+                    'customer' => $customer,
+                    'settings' => $settings,
+                    'manage_mode' => $manage_mode,
+                    'ics_stream' => $ics_stream,
+                ]
             );
-
-            if ($send_provider === true) {
-                config(['language' => $provider['language']]);
-                $this->CI->lang->load('translations');
-                $subject = $manage_mode ? lang('appointment_details_changed') : lang('appointment_added_to_your_plan');
-                $message = $manage_mode ? '' : lang('appointment_link_description');
-
-                try {
-                    $this->CI->email_messages->send_appointment_saved(
-                        $appointment,
-                        $provider,
-                        $service,
-                        $customer,
-                        $settings,
-                        $subject,
-                        $message,
-                        $provider_link,
-                        $provider['email'],
-                        $ics_stream,
-                        $provider['timezone'],
-                    );
-                } catch (Throwable $e) {
-                    $this->log_exception($e, 'appointment-saved to provider', $appointment['id'] ?? null);
-                }
-            }
-
-            // Notify admins.
-            $admins = $this->CI->admins_model->get();
-
-            foreach ($admins as $admin) {
-                if ($admin['settings']['notifications'] === '0') {
-                    continue;
-                }
-
-                config(['language' => $admin['language']]);
-                $this->CI->lang->load('translations');
-                $subject = $manage_mode ? lang('appointment_details_changed') : lang('appointment_added_to_your_plan');
-                $message = $manage_mode ? '' : lang('appointment_link_description');
-
-                try {
-                    $this->CI->email_messages->send_appointment_saved(
-                        $appointment,
-                        $provider,
-                        $service,
-                        $customer,
-                        $settings,
-                        $subject,
-                        $message,
-                        $provider_link,
-                        $admin['email'],
-                        $ics_stream,
-                        $admin['timezone'],
-                    );
-                } catch (Throwable $e) {
-                    $this->log_exception($e, 'appointment-saved to admin', $appointment['id'] ?? null);
-                }
-            }
-
-            // Notify secretaries.
-            $secretaries = $this->CI->secretaries_model->get();
-
-            foreach ($secretaries as $secretary) {
-                if ($secretary['settings']['notifications'] === '0') {
-                    continue;
-                }
-
-                if (!in_array($provider['id'], $secretary['providers'])) {
-                    continue;
-                }
-
-                config(['language' => $secretary['language']]);
-                $this->CI->lang->load('translations');
-                $subject = $manage_mode ? lang('appointment_details_changed') : lang('appointment_added_to_your_plan');
-                $message = $manage_mode ? '' : lang('appointment_link_description');
-
-                try {
-                    $this->CI->email_messages->send_appointment_saved(
-                        $appointment,
-                        $provider,
-                        $service,
-                        $customer,
-                        $settings,
-                        $subject,
-                        $message,
-                        $provider_link,
-                        $secretary['email'],
-                        $ics_stream,
-                        $secretary['timezone'],
-                    );
-                } catch (Throwable $e) {
-                    $this->log_exception($e, 'appointment-saved to secretary', $appointment['id'] ?? null);
-                }
-            }
         } catch (Throwable $e) {
-            $this->log_exception($e, 'appointment-saved (general exception)', $appointment['id'] ?? null);
-        } finally {
-            config(['language' => $current_language ?? 'english']);
-            $this->CI->lang->load('translations');
+            log_message(
+                'error',
+                'Notifications - Could not dispatch appointment.saved event (' .
+                    ($appointment['id'] ?? '-') .
+                    ') : ' .
+                    $e->getMessage(),
+            );
+            log_message('error', $e->getTraceAsString());
         }
     }
 
     /**
      * Send the required notifications, related to an appointment removal.
      *
+     * This method now dispatches an event asynchronously instead of sending emails directly.
+     * The actual email sending is handled by EmailNotificationListener.
+     *
      * @param array $appointment Appointment data.
      * @param array $service Service data.
      * @param array $provider Provider data.
      * @param array $customer Customer data.
      * @param array $settings Required settings.
+     * @param string $cancellation_reason Cancellation reason.
      */
     public function notify_appointment_deleted(
         array $appointment,
@@ -223,136 +111,31 @@ class Notifications
         string $cancellation_reason = '',
     ): void {
         try {
-            $current_language = config('language');
+            $this->CI->load->library('event_dispatcher');
 
-            // Notify provider.
-            $send_provider = filter_var(
-                $this->CI->providers_model->get_setting($provider['id'], 'notifications'),
-                FILTER_VALIDATE_BOOLEAN,
+            // Dispatch event asynchronously - listeners will handle the actual notifications
+            $this->CI->event_dispatcher->dispatch(
+                Event_dispatcher::EVENT_APPOINTMENT_DELETED,
+                [
+                    'event' => 'appointment.deleted',
+                    'appointment' => $appointment,
+                    'service' => $service,
+                    'provider' => $provider,
+                    'customer' => $customer,
+                    'settings' => $settings,
+                    'cancellation_reason' => $cancellation_reason,
+                ]
             );
-
-            if ($send_provider === true) {
-                config(['language' => $provider['language']]);
-                $this->CI->lang->load('translations');
-
-                try {
-                    $this->CI->email_messages->send_appointment_deleted(
-                        $appointment,
-                        $provider,
-                        $service,
-                        $customer,
-                        $settings,
-                        $provider['email'],
-                        $cancellation_reason,
-                        $provider['timezone'],
-                    );
-                } catch (Throwable $e) {
-                    $this->log_exception($e, 'appointment-deleted to provider', $appointment['id'] ?? null);
-                }
-            }
-
-            // Notify customer.
-            $send_customer =
-                !empty($customer['email']) && filter_var(setting('customer_notifications'), FILTER_VALIDATE_BOOLEAN);
-
-            if ($send_customer === true) {
-                config(['language' => $customer['language']]);
-                $this->CI->lang->load('translations');
-
-                try {
-                    $this->CI->email_messages->send_appointment_deleted(
-                        $appointment,
-                        $provider,
-                        $service,
-                        $customer,
-                        $settings,
-                        $customer['email'],
-                        $cancellation_reason,
-                        $customer['timezone'],
-                    );
-                } catch (Throwable $e) {
-                    $this->log_exception($e, 'appointment-deleted to customer', $appointment['id'] ?? null);
-                }
-            }
-
-            // Notify admins.
-            $admins = $this->CI->admins_model->get();
-
-            foreach ($admins as $admin) {
-                if ($admin['settings']['notifications'] === '0') {
-                    continue;
-                }
-
-                config(['language' => $admin['language']]);
-                $this->CI->lang->load('translations');
-
-                try {
-                    $this->CI->email_messages->send_appointment_deleted(
-                        $appointment,
-                        $provider,
-                        $service,
-                        $customer,
-                        $settings,
-                        $admin['email'],
-                        $cancellation_reason,
-                        $admin['timezone'],
-                    );
-                } catch (Throwable $e) {
-                    $this->log_exception($e, 'appointment-deleted to admin', $appointment['id'] ?? null);
-                }
-            }
-
-            // Notify secretaries.
-            $secretaries = $this->CI->secretaries_model->get();
-
-            foreach ($secretaries as $secretary) {
-                if ($secretary['settings']['notifications'] === '0') {
-                    continue;
-                }
-
-                if (!in_array($provider['id'], $secretary['providers'])) {
-                    continue;
-                }
-
-                config(['language' => $secretary['language']]);
-                $this->CI->lang->load('translations');
-
-                try {
-                    $this->CI->email_messages->send_appointment_deleted(
-                        $appointment,
-                        $provider,
-                        $service,
-                        $customer,
-                        $settings,
-                        $secretary['email'],
-                        $cancellation_reason,
-                        $secretary['timezone'],
-                    );
-                } catch (Throwable $e) {
-                    $this->log_exception($e, 'appointment-deleted to secretary', $appointment['id'] ?? null);
-                }
-            }
         } catch (Throwable $e) {
             log_message(
                 'error',
-                'Notifications - Could not email cancellation details of appointment (' .
+                'Notifications - Could not dispatch appointment.deleted event (' .
                     ($appointment['id'] ?? '-') .
                     ') : ' .
                     $e->getMessage(),
             );
             log_message('error', $e->getTraceAsString());
-        } finally {
-            config(['language' => $current_language ?? 'english']);
-            $this->CI->lang->load('translations');
         }
     }
 
-    private function log_exception(Throwable $e, string $message, ?int $appointment_id): void
-    {
-        log_message(
-            'error',
-            'Notifications - Could not email ' . $message . ' (' . ($appointment_id ?? '-') . ') : ' . $e->getMessage(),
-        );
-        log_message('error', $e->getTraceAsString());
-    }
 }

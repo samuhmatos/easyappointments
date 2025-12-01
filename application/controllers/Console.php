@@ -156,6 +156,27 @@ class Console extends EA_Controller
     }
 
     /**
+     * Process pending events from the event queue.
+     *
+     * Use this method in a cronjob to automatically process queued events (notifications, etc.).
+     *
+     * Usage:
+     *
+     * php index.php console process_events
+     *
+     * php index.php console process_events 20
+     *
+     * @param int $limit Maximum number of events to process per run (default: 10).
+     *
+     * @return void
+     */
+    public function process_events(int $limit = 10): void
+    {
+        $this->load->library('event_dispatcher');
+        $this->event_dispatcher->process_queue($limit);
+    }
+
+    /**
      * Show help information about the console capabilities.
      *
      * Use this method to see the available commands.
@@ -184,6 +205,8 @@ class Console extends EA_Controller
             '⇾ php index.php console install',
             '⇾ php index.php console backup',
             '⇾ php index.php console sync',
+            '⇾ php index.php console process_events',
+            '⇾ php index.php console process_events 20',
             '',
             '',
         ];

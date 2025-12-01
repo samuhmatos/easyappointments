@@ -7,15 +7,20 @@
 $config['useragent'] = 'Easy!Appointments';
 $config['protocol'] = 'mail'; // or 'smtp'
 $config['mailtype'] = 'html'; // or 'text'
-// $config['smtp_debug'] = '0'; // or '1'
-// $config['smtp_auth'] = TRUE; //or FALSE for anonymous relay.
-// $config['smtp_host'] = '';
-// $config['smtp_user'] = '';
-// $config['smtp_pass'] = '';
-// $config['smtp_crypto'] = 'ssl'; // or 'tls'
-// $config['smtp_port'] = 25;
-// $config['from_name'] = '';
-// $config['from_address'] = '';
-// $config['reply_to'] = '';
+
+// Configurações do Mailpit (não requer autenticação)
+$config['smtp_host'] = 'mailpit'; // Nome do serviço no docker-compose
+$config['smtp_port'] = 1025; // Porta SMTP do Mailpit
+$config['smtp_auth'] = FALSE; // Mailpit não requer autenticação
+$config['smtp_crypto'] = ''; // Sem criptografia (TLS/SSL)
+$config['smtp_user'] = ''; // Vazio
+$config['smtp_pass'] = ''; // Vazio
+$config['smtp_debug'] = '0'; // Mude para '1' para debug
+
+// Configurações do remetente (opcional, pode usar settings do sistema)
+$config['from_name'] = 'Easy!Appointments';
+$config['from_address'] = 'noreply@easyappointments.local';
+$config['reply_to'] = 'noreply@easyappointments.local';
+
 $config['crlf'] = "\r\n";
 $config['newline'] = "\r\n";
