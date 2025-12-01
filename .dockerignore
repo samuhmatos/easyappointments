@@ -1,0 +1,69 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Node
+node_modules
+npm-debug.log
+# Nota: package-lock.json NÃO deve ser ignorado, pois é necessário para build reproduzível
+
+# PHP
+vendor
+# Nota: composer.lock NÃO deve ser ignorado, pois é necessário para build reproduzível
+
+# Build artifacts
+build
+*.zip
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# Docker
+docker-compose.yml
+docker-compose.prod.yml
+Dockerfile.prod
+.dockerignore
+# Nota: docker-entrypoint-prod.sh NÃO deve ser ignorado, pois é necessário no build
+docker/mysql
+docker/baikal
+docker/openldap
+
+# Documentation
+docs
+*.md
+!README.md
+
+# Tests
+tests
+phpunit.xml
+
+# Development files
+fix-permissions.sh
+fix-permissions-no-sudo.sh
+QUICK-FIX.md
+config.php
+config-sample copy.php
+docker-compose.prod copy.yml
+
+# Storage (será montado como volume)
+storage/logs/*
+storage/cache/*
+storage/sessions/*
+storage/backups/*
+storage/uploads/*
+
+# Assets compilados (serão gerados no build)
+assets/js/**/*.min.js
+assets/css/**/*.css
+assets/vendor
+
+# Temporary files
+.tmp-package
+.DS_Store
+metafile
+

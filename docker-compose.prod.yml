@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile.prod
+        image: marcaagora/easyappointments:latest
+        restart: always
+        ports:
+            - '80:80'
+        environment:
+            - BASE_URL=http://localhost
+            - LANGUAGE=portuguese
+            - DEBUG_MODE=FALSE
+            - DB_HOST=mysql
+            - DB_NAME=easyappointments
+            - DB_USERNAME=root
+            - DB_PASSWORD=secret
+            - GOOGLE_SYNC_FEATURE=FALSE
+            - GOOGLE_CLIENT_ID=
+            - GOOGLE_CLIENT_SECRET=
+            # Configurações de email (opcional)
+            - MAIL_PROTOCOL=smtp
+            - MAIL_SMTP_DEBUG=0
+            - MAIL_SMTP_AUTH=1
+            - MAIL_SMTP_HOST=smtp.example.org
+            - MAIL_SMTP_USER=
+            - MAIL_SMTP_PASS=
+            - MAIL_SMTP_CRYPTO=tls
+            - MAIL_SMTP_PORT=587
+            - MAIL_FROM_ADDRESS=noreply@example.org
+            - MAIL_FROM_NAME=EasyAppointments
+            - MAIL_REPLY_TO_ADDRESS=noreply@example.org
+        volumes:
+            # Volume para persistir dados (uploads, logs, etc)
+            - ./storage:/var/www/html/storage
+            # Volume opcional para config.php customizado (se não quiser usar variáveis de ambiente)
+            # - ./config.php:/var/www/html/config.php
+        depends_on:
+            - mysql
+
+    mysql:
+        image: mysql:8.0
+        restart: always
+        environment:
+            - MYSQL_ROOT_PASSWORD=secret
+            - MYSQL_DATABASE=easyappointments
+            - MYSQL_USER=ea_user
+            - MYSQL_PASSWORD=ea_password
+        volumes:
+            - mysql_data:/var/lib/mysql
+        ports:
+            - '3306:3306'
+
+volumes:
+    mysql_data:
+        driver: local

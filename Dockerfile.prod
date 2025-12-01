@@ -1,0 +1,112 @@
+# Stage 1: Build - Instala dependências e compila assets
+FROM php:8.2-apache AS builder
+
+WORKDIR /var/www/html
+
+# Instalar dependências do sistema necessárias para build
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libfreetype-dev \
+        libjpeg62-turbo-dev \
+        libpng-dev \
+        unzip \
+        wget \
+        git \
+        curl \
+    && curl -sSL https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions -o - | sh -s \
+        curl gd intl ldap mbstring mysqli odbc pdo pdo_mysql soap sockets xml zip exif gettext bcmath csv event inotify redis \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && curl -sLS https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
+# Copiar apenas arquivos necessários para build
+COPY composer.json composer.lock ./
+COPY package.json package-lock.json ./
+COPY gulpfile.js babel.config.json ./
+
+# Instalar dependências PHP
+RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction \
+    && rm -rf /root/.composer/cache
+
+# Instalar dependências Node e compilar assets
+COPY assets/ ./assets/
+RUN npm ci \
+    && npx gulp compile \
+    && npm cache clean --force \
+    && rm -rf node_modules
+
+# Copiar resto do código
+COPY . .
+
+# Stage 2: Production - Imagem final otimizada
+FROM php:8.2-apache
+
+# Variáveis de ambiente
+ENV BASE_URL="http://localhost" \
+    LANGUAGE="portuguese" \
+    DEBUG_MODE="FALSE" \
+    DB_HOST="mysql" \
+    DB_NAME="easyappointments" \
+    DB_USERNAME="root" \
+    DB_PASSWORD="secret" \
+    GOOGLE_SYNC_FEATURE=FALSE \
+    GOOGLE_CLIENT_ID="" \
+    GOOGLE_CLIENT_SECRET="" \
+    MAIL_PROTOCOL="mail" \
+    MAIL_SMTP_DEBUG="0" \
+    MAIL_SMTP_AUTH="0" \
+    MAIL_SMTP_HOST="" \
+    MAIL_SMTP_USER="" \
+    MAIL_SMTP_PASS="" \
+    MAIL_SMTP_CRYPTO="tls" \
+    MAIL_SMTP_PORT="587" \
+    MAIL_FROM_ADDRESS="" \
+    MAIL_FROM_NAME="" \
+    MAIL_REPLY_TO_ADDRESS=""
+
+EXPOSE 80
+
+WORKDIR /var/www/html
+
+# Instalar apenas extensões PHP necessárias (sem ferramentas de build)
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libfreetype6 \
+        libjpeg62-turbo \
+        libpng16-16 \
+    && curl -sSL https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions -o - | sh -s \
+        curl gd intl ldap mbstring mysqli odbc pdo pdo_mysql soap sockets xml zip exif gettext bcmath csv event inotify redis \
+    && apt-get -y autoremove \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Copiar configurações PHP
+COPY docker/php-fpm/php-ini-overrides.ini /usr/local/etc/php/conf.d/99-overrides.ini
+
+# Copiar arquivos compilados do builder (apenas o necessário)
+COPY --from=builder /var/www/html/vendor ./vendor
+COPY --from=builder /var/www/html/assets ./assets
+COPY --from=builder /var/www/html/application ./application
+COPY --from=builder /var/www/html/system ./system
+COPY --from=builder /var/www/html/storage ./storage
+COPY --from=builder /var/www/html/index.php .
+COPY --from=builder /var/www/html/patch.php .
+COPY --from=builder /var/www/html/config-sample.php .
+
+# Copiar apenas arquivos essenciais (excluir desenvolvimento)
+COPY docker-entrypoint-prod.sh /usr/local/bin/docker-entrypoint-prod.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint-prod.sh
+
+# Remover arquivos desnecessários para reduzir tamanho
+RUN find . -type d \( -name ".git" -o -name ".github" -o -name "tests" -o -name "docs" -o -name "node_modules" \) -exec rm -rf {} + 2>/dev/null || true \
+    && find . -maxdepth 1 -type f \( -name "*.md" ! -name "README.md" -o -name "phpunit.xml" -o -name "openapi.yml" -o -name "gulpfile.js" -o -name "babel.config.json" -o -name "package*.json" -o -name "composer.*" -o -name "*.png" -o -name "docker-compose*.yml" -o -name "Dockerfile*" -o -name ".dockerignore" -o -name "fix-permissions*.sh" -o -name ".editorconfig" -o -name ".gitattributes" -o -name ".prettier*" \) -delete 2>/dev/null || true
+
+# Configurar permissões
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html \
+    && chmod -R 777 /var/www/html/storage
+
+# Habilitar mod_rewrite do Apache
+RUN a2enmod rewrite
+
+ENTRYPOINT ["docker-entrypoint-prod.sh"]
