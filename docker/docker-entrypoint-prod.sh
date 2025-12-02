@@ -46,10 +46,13 @@ if [ -n "$MAIL_SMTP_HOST" ]; then
 EOF
 fi
 
-# Garantir permissões corretas
-chown -R www-data:www-data /var/www/html
-chmod -R 755 /var/www/html
-chmod -R 777 /var/www/html/storage
+
+FILE=/var/www/html/application/config/config.php
+STRING="\$config['base_url'] = '${BASE_URL}';"
+
+if [ "$(tail -n 1 "$FILE")" != "$STRING" ]; then
+    echo "$STRING" >> "$FILE"
+fi
 
 # Iniciar Apache
 exec apache2-foreground

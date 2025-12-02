@@ -32,11 +32,11 @@ services:
             - MAIL_FROM_ADDRESS=noreply@example.org
             - MAIL_FROM_NAME=EasyAppointments
             - MAIL_REPLY_TO_ADDRESS=noreply@example.org
-        volumes:
-            # Volume para persistir dados (uploads, logs, etc)
-            - ./storage:/var/www/html/storage
-            # Volume opcional para config.php customizado (se não quiser usar variáveis de ambiente)
-            # - ./config.php:/var/www/html/config.php
+        # volumes:
+        # Volume para persistir dados (uploads, logs, etc)
+        # - ./storage:/var/www/html/storage
+        # Volume opcional para config.php customizado (se não quiser usar variáveis de ambiente)
+        # - ./config.php:/var/www/html/config.php
         depends_on:
             - mysql
 
@@ -48,11 +48,10 @@ services:
             - MYSQL_DATABASE=easyappointments
             - MYSQL_USER=ea_user
             - MYSQL_PASSWORD=ea_password
-        volumes:
-            - mysql_data:/var/lib/mysql
+        # volumes:
+        #     - mysql_data:/var/lib/mysql
         ports:
             - '3306:3306'
-
-volumes:
-    mysql_data:
-        driver: local
+# volumes:
+#     mysql_data:
+#         driver: local
