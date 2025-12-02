@@ -58,13 +58,33 @@ class Console extends EA_Controller
      */
     public function install(): void
     {
-        $this->instance->migrate('fresh');
+        try {
+            echo PHP_EOL . '⇾ Running database migrations...' . PHP_EOL;
+            $this->instance->migrate('fresh');
+            echo '⇾ Migrations completed successfully.' . PHP_EOL . PHP_EOL;
 
-        $password = $this->instance->seed();
+            echo '⇾ Seeding database with initial data...' . PHP_EOL;
+            $password = $this->instance->seed();
+            echo '⇾ Database seeded successfully.' . PHP_EOL . PHP_EOL;
 
-        response(
-            PHP_EOL . '⇾ Installation completed, login with "administrator" / "' . $password . '".' . PHP_EOL . PHP_EOL,
-        );
+            response(
+                PHP_EOL .
+                    '⇾ Installation completed, login with "administrator" / "' .
+                    $password .
+                    '".' .
+                    PHP_EOL .
+                    PHP_EOL,
+            );
+        } catch (Throwable $e) {
+            echo PHP_EOL . '⇾ ERROR: Installation failed!' . PHP_EOL;
+            echo '⇾ Error: ' . $e->getMessage() . PHP_EOL;
+            echo '⇾ File: ' . $e->getFile() . ':' . $e->getLine() . PHP_EOL . PHP_EOL;
+            if ($e->getTraceAsString()) {
+                echo '⇾ Stack trace:' . PHP_EOL;
+                echo $e->getTraceAsString() . PHP_EOL . PHP_EOL;
+            }
+            exit(1);
+        }
     }
 
     /**

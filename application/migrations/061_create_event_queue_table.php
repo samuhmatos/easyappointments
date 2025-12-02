@@ -78,9 +78,17 @@ class Migration_Create_event_queue_table extends EA_Migration
 
             $this->dbforge->create_table('event_queue', true, ['engine' => 'InnoDB']);
             
-            // Add composite index for get_pending() query optimization
-            $this->db->query("CREATE INDEX `event_queue_status_scheduled_at_attempts_create_datetime` 
-                ON `event_queue` (`status`, `scheduled_at`, `attempts`, `create_datetime`)");
+            // Verificar se a tabela foi criada com sucesso antes de adicionar o índice
+            if ($this->db->table_exists('event_queue')) {
+                try {
+                    // Add composite index for get_pending() query optimization
+                    $this->db->query("CREATE INDEX `event_queue_status_scheduled_at_attempts_create_datetime` 
+                        ON `event_queue` (`status`, `scheduled_at`, `attempts`, `create_datetime`)");
+                } catch (Exception $e) {
+                    // Se o índice já existir ou houver outro erro, apenas logar
+                    log_message('debug', 'Migration 061: Could not create index on event_queue: ' . $e->getMessage());
+                }
+            }
         }
     }
 

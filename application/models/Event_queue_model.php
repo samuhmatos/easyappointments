@@ -21,6 +21,11 @@
 class Event_queue_model extends EA_Model
 {
     /**
+     * @var string
+     */
+    protected string $table = 'event_queue';
+
+    /**
      * @var array
      */
     protected array $casts = [
@@ -35,7 +40,6 @@ class Event_queue_model extends EA_Model
     public function __construct()
     {
         parent::__construct();
-        $this->table = 'event_queue';
     }
 
     /**
@@ -89,11 +93,10 @@ class Event_queue_model extends EA_Model
      */
     public function mark_processing(int $id): void
     {
-        $this->db->where('id', $id)
-            ->update($this->table, [
-                'status' => 'processing',
-                'update_datetime' => date('Y-m-d H:i:s'),
-            ]);
+        $this->db->where('id', $id)->update($this->table, [
+            'status' => 'processing',
+            'update_datetime' => date('Y-m-d H:i:s'),
+        ]);
     }
 
     /**
@@ -105,12 +108,11 @@ class Event_queue_model extends EA_Model
      */
     public function mark_processed(int $id): void
     {
-        $this->db->where('id', $id)
-            ->update($this->table, [
-                'status' => 'processed',
-                'processed_at' => date('Y-m-d H:i:s'),
-                'update_datetime' => date('Y-m-d H:i:s'),
-            ]);
+        $this->db->where('id', $id)->update($this->table, [
+            'status' => 'processed',
+            'processed_at' => date('Y-m-d H:i:s'),
+            'update_datetime' => date('Y-m-d H:i:s'),
+        ]);
     }
 
     /**
@@ -123,7 +125,8 @@ class Event_queue_model extends EA_Model
      */
     public function mark_failed(int $id, string $error): void
     {
-        $this->db->where('id', $id)
+        $this->db
+            ->where('id', $id)
             ->set('status', 'failed')
             ->set('error_message', $error)
             ->set('attempts', 'attempts + 1', false)
@@ -140,7 +143,8 @@ class Event_queue_model extends EA_Model
      */
     public function reset_failed_for_retry(int $limit = 10): void
     {
-        $this->db->where('status', 'failed')
+        $this->db
+            ->where('status', 'failed')
             ->where('attempts < max_attempts', null, false)
             ->limit($limit)
             ->update($this->table, [
@@ -149,4 +153,3 @@ class Event_queue_model extends EA_Model
             ]);
     }
 }
-

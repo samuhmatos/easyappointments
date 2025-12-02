@@ -54,7 +54,7 @@ class Instance
 
         if ($type === 'up') {
             if (!$this->CI->migration->version($current_version + 1)) {
-                show_error($this->CI->migration->error_string());
+                throw new RuntimeException('Migration failed: ' . $this->CI->migration->error_string());
             }
 
             return;
@@ -62,18 +62,18 @@ class Instance
 
         if ($type === 'down') {
             if (!$this->CI->migration->version($current_version - 1)) {
-                show_error($this->CI->migration->error_string());
+                throw new RuntimeException('Migration failed: ' . $this->CI->migration->error_string());
             }
 
             return;
         }
 
         if ($type === 'fresh' && !$this->CI->migration->version(0)) {
-            show_error($this->CI->migration->error_string());
+            throw new RuntimeException('Migration failed (fresh): ' . $this->CI->migration->error_string());
         }
 
         if ($this->CI->migration->latest() === false) {
-            show_error($this->CI->migration->error_string());
+            throw new RuntimeException('Migration failed (latest): ' . $this->CI->migration->error_string());
         }
     }
 

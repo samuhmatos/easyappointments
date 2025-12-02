@@ -39,7 +39,53 @@ class Event_dispatcher
     public function __construct()
     {
         $this->CI = &get_instance();
-        $this->CI->load->model('event_queue_model');
+        // Não carregar o modelo no construtor para evitar problemas durante migrations
+        // O modelo será carregado sob demanda quando necessário
+    }
+
+    /**
+     * Load the event_queue_model if not already loaded and table exists.
+     *
+     * @return bool Returns true if model is loaded, false otherwise.
+     */
+    protected function ensure_model_loaded(): bool
+    {
+        // Tentar acessar o modelo diretamente para verificar se já está carregado
+        try {
+            if (isset($this->CI->event_queue_model) && is_object($this->CI->event_queue_model)) {
+                return true;
+            }
+        } catch (Throwable $e) {
+            // Modelo não existe ainda, continuar para carregar
+        }
+
+        try {
+            // Verificar se a tabela existe antes de carregar o modelo
+            if (!$this->CI->db->table_exists('event_queue')) {
+                log_message('debug', 'Event Dispatcher: event_queue table does not exist yet');
+                return false;
+            }
+
+            // Carregar o modelo
+            $this->CI->load->model('event_queue_model');
+            
+            // Verificar se foi carregado com sucesso tentando acessá-lo
+            try {
+                if (isset($this->CI->event_queue_model) && is_object($this->CI->event_queue_model)) {
+                    log_message('debug', 'Event Dispatcher: event_queue_model loaded successfully');
+                    return true;
+                }
+            } catch (Throwable $e) {
+                log_message('error', 'Event Dispatcher: Model loaded but cannot be accessed: ' . $e->getMessage());
+            }
+            
+            log_message('error', 'Event Dispatcher: Failed to load event_queue_model - model object not accessible after load');
+            return false;
+        } catch (Throwable $e) {
+            log_message('error', 'Event Dispatcher: Error loading event_queue_model: ' . $e->getMessage());
+            log_message('error', 'Event Dispatcher: Stack trace: ' . $e->getTraceAsString());
+            return false;
+        }
     }
 
     /**
@@ -53,17 +99,55 @@ class Event_dispatcher
      */
     public function dispatch(string $eventName, array $payload = [], ?\DateTime $scheduledAt = null): void
     {
-        $event = [
-            'event_name' => $eventName,
-            'payload' => $payload,
-            'status' => 'pending',
-        ];
+        try {
+            // Verificar se a tabela existe antes de tentar carregar o modelo
+            if (!$this->CI->db->table_exists('event_queue')) {
+                log_message('debug', 'Event Dispatcher: Cannot dispatch event "' . $eventName . '" - event_queue table does not exist');
+                return;
+            }
 
-        if ($scheduledAt !== null) {
-            $event['scheduled_at'] = $scheduledAt->format('Y-m-d H:i:s');
+            // Carregar o modelo se necessário (o Loader verifica se já está carregado)
+            $this->CI->load->model('event_queue_model');
+            
+            // Acessar o modelo usando a mesma técnica da biblioteca Api
+            $modelName = 'event_queue_model';
+            
+            // Tentar acessar o modelo de diferentes formas
+            try {
+                $model = $this->CI->{$modelName};
+            } catch (Throwable $e) {
+                log_message('error', 'Event Dispatcher: Error accessing model via {$modelName}: ' . $e->getMessage());
+                // Tentar acessar diretamente
+                try {
+                    $model = $this->CI->event_queue_model;
+                } catch (Throwable $e2) {
+                    log_message('error', 'Event Dispatcher: Error accessing model directly: ' . $e2->getMessage());
+                    return;
+                }
+            }
+            
+            if (!is_object($model)) {
+                log_message('error', 'Event Dispatcher: event_queue_model is not an object after loading. Type: ' . gettype($model));
+                return;
+            }
+
+            $event = [
+                'event_name' => $eventName,
+                'payload' => $payload,
+                'status' => 'pending',
+            ];
+
+            if ($scheduledAt !== null) {
+                $event['scheduled_at'] = $scheduledAt->format('Y-m-d H:i:s');
+            }
+
+            $eventId = $model->enqueue($event);
+            log_message('debug', 'Event Dispatcher: Event "' . $eventName . '" enqueued with ID: ' . $eventId);
+        } catch (Throwable $e) {
+            log_message('error', 'Event Dispatcher: Error dispatching event "' . $eventName . '": ' . $e->getMessage());
+            log_message('error', 'Event Dispatcher: File: ' . $e->getFile() . ':' . $e->getLine());
+            log_message('error', 'Event Dispatcher: Stack trace: ' . $e->getTraceAsString());
         }
-
-        $this->CI->event_queue_model->enqueue($event);
     }
 
     /**
@@ -88,13 +172,37 @@ class Event_dispatcher
      */
     public function process_queue(int $limit = 10): void
     {
-        $events = $this->CI->event_queue_model->get_pending($limit);
+        try {
+            // Verificar se a tabela existe antes de tentar carregar o modelo
+            if (!$this->CI->db->table_exists('event_queue')) {
+                log_message('debug', 'Event Dispatcher: Cannot process queue - event_queue table does not exist');
+                return;
+            }
+
+            // Carregar o modelo se necessário (o Loader verifica se já está carregado)
+            $this->CI->load->model('event_queue_model');
+            
+            // Acessar o modelo usando a mesma técnica da biblioteca Api
+            $modelName = 'event_queue_model';
+            $model = $this->CI->{$modelName};
+            
+            if (!is_object($model)) {
+                log_message('error', 'Event Dispatcher: Cannot process queue - event_queue_model is not an object');
+                return;
+            }
+        } catch (Throwable $e) {
+            log_message('error', 'Event Dispatcher: Error loading model for process_queue: ' . $e->getMessage());
+            log_message('error', 'Event Dispatcher: Stack trace: ' . $e->getTraceAsString());
+            return;
+        }
+
+        $events = $model->get_pending($limit);
         
         log_message('error', 'Event Dispatcher - Found ' . count($events) . ' pending events to process');
 
         foreach ($events as $event) {
             log_message('error', 'Event Dispatcher - Processing event ID: ' . $event['id'] . ', event_name: ' . $event['event_name']);
-            $this->CI->event_queue_model->mark_processing($event['id']);
+            $model->mark_processing($event['id']);
 
             try {
                 $payload = json_decode($event['payload'], true);
@@ -105,10 +213,10 @@ class Event_dispatcher
                 log_message('error', 'Event Dispatcher - Payload decoded successfully, keys: ' . implode(', ', array_keys($payload)));
                 $this->fire($event['event_name'], $payload);
                 log_message('error', 'Event Dispatcher - Event fired successfully, marking as processed');
-                $this->CI->event_queue_model->mark_processed($event['id']);
+                $model->mark_processed($event['id']);
                 log_message('error', 'Event Dispatcher - Event ID ' . $event['id'] . ' marked as processed');
             } catch (Throwable $e) {
-                $this->CI->event_queue_model->mark_failed($event['id'], $e->getMessage());
+                $model->mark_failed($event['id'], $e->getMessage());
                 log_message(
                     'error',
                     'Event Dispatcher - Failed to process event (' .
