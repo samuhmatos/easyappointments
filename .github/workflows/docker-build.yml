@@ -56,7 +56,10 @@ jobs:
                   labels: ${{ steps.meta.outputs.labels }}
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
-                  platforms: linux/amd64,linux/arm64
+                  # Removido multi-platform para reduzir tempo de build
+                  # Se precisar de ARM64, descomente a linha abaixo
+                  # platforms: linux/amd64,linux/arm64
+                  platforms: linux/amd64
 
             - name: Image digest
               run: echo "Image pushed with digest ${{ steps.build.outputs.digest }}"

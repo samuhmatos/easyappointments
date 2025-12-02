@@ -4,7 +4,10 @@ FROM php:8.2-apache AS builder
 WORKDIR /var/www/html
 
 # Instalar dependências do sistema necessárias para build
-RUN apt-get update \
+# Usando cache mount para acelerar builds subsequentes
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update \
     && apt-get install -y --no-install-recommends \
         libfreetype-dev \
         libjpeg62-turbo-dev \
@@ -24,15 +27,15 @@ COPY composer.json composer.lock ./
 COPY package.json package-lock.json ./
 COPY gulpfile.js babel.config.json ./
 
-# Instalar dependências PHP
-RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction \
-    && rm -rf /root/.composer/cache
+# Instalar dependências PHP com cache mount
+RUN --mount=type=cache,target=/root/.composer/cache \
+    composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
 
-# Instalar dependências Node e compilar assets
+# Instalar dependências Node e compilar assets com cache mount
 COPY assets/ ./assets/
-RUN npm ci \
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --cache /root/.npm \
     && npx gulp compile \
-    && npm cache clean --force \
     && rm -rf node_modules
 
 # Copiar resto do código
@@ -71,16 +74,18 @@ WORKDIR /var/www/html
 # Copiar configurações PHP
 COPY docker/php-fpm/php-ini-overrides.ini /usr/local/etc/php/conf.d/99-overrides.ini
 
-RUN apt-get update \
-    && apt-get install -y libfreetype-dev libjpeg62-turbo-dev libpng-dev unzip wget \
+# Instalar dependências do sistema com cache mount
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update \
+    && apt-get install -y --no-install-recommends libfreetype-dev libjpeg62-turbo-dev libpng-dev unzip wget \
 	&& curl -sSL https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions -o - | sh -s \
       curl gd intl ldap mbstring mysqli xdebug odbc pdo pdo_mysql xml zip exif gettext bcmath csv event imap inotify mcrypt redis \
     && docker-php-ext-enable xdebug \
     && echo "alias ll=\"ls -al\"" >> /root/.bashrc \
     && apt-get -y autoremove \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
-    && chown -R www-data:www-data .
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Copiar arquivos compilados do builder (apenas o necessário)
 COPY --from=builder /var/www/html/application ./application
@@ -95,7 +100,8 @@ COPY --from=builder /var/www/html/vendor ./vendor
 
 # Copiar apenas arquivos essenciais (excluir desenvolvimento)
 COPY ./docker/docker-entrypoint-prod.sh /usr/local/bin
-RUN chmod +x /usr/local/bin/docker-entrypoint-prod.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint-prod.sh \
+    && chown -R www-data:www-data /var/www/html
 
 
 ENTRYPOINT ["docker-entrypoint-prod.sh"]
