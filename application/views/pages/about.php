@@ -20,7 +20,7 @@
             <?= lang('about_app_info') ?>
         </p>
 
-        <div class="card mb-5">
+        <!-- <div class="card mb-5">
             <div class="card-header">
                 <h5 class="fw-light text-black-50 mb-0">
                     <?= lang('current_version') ?>
@@ -30,8 +30,8 @@
                 <strong>
                     <?= config('version') ?>
                 </strong>
-            </div>
-        </div>
+            </div> -->
+        <!-- </div> -->
 
         <h4 class="fw-light text-black-50 mb-3">
             <?= lang('support') ?>
@@ -43,21 +43,21 @@
 
         <div class="row mb-5">
             <div class="col-lg-6 mb-3">
-                <a class="btn btn-outline-secondary d-block" href="https://easyappointments.org" target="_blank">
+                <a class="btn btn-outline-secondary d-block" href="https://marcaagora.com" target="_blank">
                     <i class="fas fa-external-link-alt me-2"></i>
                     <?= lang('official_website') ?>
                 </a>
             </div>
 
-            <div class="col-lg-6 mb-3">
+            <!-- <div class="col-lg-6 mb-3">
                 <a class="btn btn-outline-secondary d-block"
                    href="https://groups.google.com/forum/#!forum/easy-appointments" target="_blank">
                     <i class="fas fa-external-link-alt me-2"></i>
                     <?= lang('support_group') ?>
                 </a>
-            </div>
+            </div> -->
 
-            <div class="col-lg-6 mb-3">
+            <!-- <div class="col-lg-6 mb-3">
                 <a class="btn btn-outline-secondary d-block"
                    href="https://github.com/alextselegidis/easyappointments/issues" target="_blank">
                     <i class="fas fa-external-link-alt me-2"></i>
@@ -85,14 +85,14 @@
                     <i class="fas fa-external-link-alt me-2"></i>
                     Customize E!A
                 </a>
-            </div>
+            </div> -->
         </div>
 
-        <h4 class="fw-light text-black-50 mb-3">
+        <!-- <h4 class="fw-light text-black-50 mb-3">
             <?= lang('license') ?>
-        </h4>
+        </h4> -->
 
-        <p>
+        <!-- <p>
             <?= lang('about_app_license') ?>
         </p>
 
@@ -102,7 +102,7 @@
                 <i class="fas fa-external-link-alt me-2"></i>
                 GPL-3.0
             </a>
-        </div>
+        </div> -->
     </div>
 </div>
 

@@ -8,11 +8,13 @@
 ?>
 
 <nav id="header" class="navbar navbar-expand-md navbar-dark">
-    <div id="header-logo" class="navbar-brand">
-        <img src="<?= base_url('assets/img/logo.png') ?>" alt="logo">
-        <h6>MarcaAgora</h6>
-        <small>Agendamento Online</small>
-    </div>
+    <a href="<?= site_url('calendar') ?>">
+        <div id="header-logo" class="navbar-brand">
+            <img src="<?= base_url('assets/img/logo.png') ?>" alt="logo">
+            <h6>MarcaAgora</h6>
+            <small>Agendamento Online</small>
+        </div>
+    </a>
 
     <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#header-menu">
         <span class="sr-only">Toggle navigation</span>
