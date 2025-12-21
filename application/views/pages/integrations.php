@@ -17,7 +17,7 @@
             </p>
 
             <div class="row">
-                <div class="col-sm-6 mb-4">
+                <!-- <div class="col-sm-6 mb-4">
                     <div class="card h-100">
                         <div class="card-header">
                             <h5 class="fw-light text-black-50 mb-0">
@@ -38,9 +38,9 @@
                             </a>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
-                <div class="col-sm-6 mb-4">
+                <!-- <div class="col-sm-6 mb-4">
                     <div class="card h-100">
                         <div class="card-header">
                             <h5 class="fw-light text-black-50 mb-0">
@@ -62,9 +62,9 @@
                             </a>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
-                <div class="col-sm-6 mb-4">
+                <!-- <div class="col-sm-6 mb-4">
                     <div class="card h-100">
                         <div class="card-header">
                             <h5 class="fw-light text-black-50 mb-0">
@@ -86,9 +86,9 @@
                             </a>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
-                <div class="col-sm-6 mb-4">
+                <!-- <div class="col-sm-6 mb-4">
                     <div class="card h-100">
                         <div class="card-header">
                             <h5 class="fw-light text-black-50 mb-0">
@@ -109,9 +109,9 @@
                             </a>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
-                <div class="col-sm-6 mb-4">
+                <!-- <div class="col-sm-6 mb-4">
                     <div class="card h-100">
                         <div class="card-header">
                             <h5 class="fw-light text-black-50 mb-0">
@@ -132,7 +132,7 @@
                             </a>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <?php slot('after_integration_cards'); ?>
             </div>
