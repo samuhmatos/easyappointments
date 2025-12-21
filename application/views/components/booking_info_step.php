@@ -27,6 +27,8 @@
         <h2 class="frame-title"><?= lang('customer_information') ?></h2>
 
         <div class="row frame-content">
+            <div id="form-message" class="alert alert-danger d-none"></div>
+        
             <div class="col-12 col-md-6 field-col mx-auto">
                 <?php if ($display_first_name): ?>
                     <div class="mb-3">
@@ -76,7 +78,9 @@
                             <?php endif; ?>
                         </label>
                         <input type="text" id="phone-number" maxlength="60"
-                               class="<?= $require_phone_number ? 'required' : '' ?> form-control"/>
+                               class="<?= $require_phone_number
+                                   ? 'required'
+                                   : '' ?> form-control" placeholder="Ex: (11) 99999-9999" pattern="\([0-9]{2}\) [0-9]{5}-[0-9]{4}" />
                     </div>
                 <?php endif; ?>
 

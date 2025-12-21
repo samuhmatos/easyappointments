@@ -32,6 +32,7 @@ App.Pages.Booking = (function () {
     const $captchaTitle = $('.captcha-title');
     const $availableHours = $('#available-hours');
     const $bookAppointmentSubmit = $('#book-appointment-submit');
+    const $formMessage = $('#form-message');
     const $deletePersonalInformation = $('#delete-personal-information');
     const $customField1 = $('#custom-field-1');
     const $customField2 = $('#custom-field-2');
@@ -173,6 +174,7 @@ App.Pages.Booking = (function () {
         addEventListeners();
 
         optimizeContactInfoDisplay();
+        showInitialFormMessage();
 
         const serviceOptionCount = $selectService.find('option').length;
 
@@ -613,6 +615,8 @@ App.Pages.Booking = (function () {
                 App.Http.Booking.applyPreviousUnavailableDates();
             }, 300);
         });
+
+        $phoneNumber.mask('(00) 00000-0000');
     }
 
     /**
@@ -621,9 +625,37 @@ App.Pages.Booking = (function () {
      *
      * @return {Boolean} Returns the validation result.
      */
+    function renderFormMessage(message) {
+        if (!$formMessage.length) {
+            return;
+        }
+
+        if (message) {
+            $formMessage.text(message);
+            $formMessage.removeClass('d-none');
+            return;
+        }
+
+        $formMessage.addClass('d-none');
+        $formMessage.text('');
+    }
+
+    function showInitialFormMessage() {
+        if (!$formMessage.length) {
+            return;
+        }
+
+        const currentText = $formMessage.text().trim();
+
+        if (currentText) {
+            $formMessage.removeClass('d-none').show();
+        }
+    }
+
     function validateCustomerForm() {
         $('#wizard-frame-3 .is-invalid').removeClass('is-invalid');
         $('#wizard-frame-3 label.text-danger').removeClass('text-danger');
+        renderFormMessage('');
 
         // Validate required fields.
         let missingRequiredField = false;
@@ -636,14 +668,14 @@ App.Pages.Booking = (function () {
         });
 
         if (missingRequiredField) {
-            $('#form-message').text(lang('fields_are_required'));
+            renderFormMessage(lang('fields_are_required'));
             return false;
         }
 
         // Validate email address.
         if ($email.val() && !App.Utils.Validation.email($email.val())) {
             $email.addClass('is-invalid');
-            $('#form-message').text(lang('invalid_email'));
+            renderFormMessage(lang('invalid_email'));
             return false;
         }
 
@@ -652,10 +684,11 @@ App.Pages.Booking = (function () {
 
         if (phoneNumber && !App.Utils.Validation.phone(phoneNumber)) {
             $phoneNumber.addClass('is-invalid');
-            $('#form-message').text(lang('invalid_phone'));
+            renderFormMessage(lang('invalid_phone'));
             return false;
         }
 
+        renderFormMessage('');
         return true;
     }
 
