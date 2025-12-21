@@ -1,7 +1,7 @@
 <?php defined('BASEPATH') or exit('No direct script access allowed');
 
 /* ----------------------------------------------------------------------------
- * Easy!Appointments - Online Appointment Scheduler
+ * MarcaAgora - Agendamento Online
  *
  * @package     EasyAppointments
  * @author      A.Tselegidis <alextselegidis@gmail.com>
@@ -68,7 +68,7 @@ class Event_dispatcher
 
             // Carregar o modelo
             $this->CI->load->model('event_queue_model');
-            
+
             // Verificar se foi carregado com sucesso tentando acessá-lo
             try {
                 if (isset($this->CI->event_queue_model) && is_object($this->CI->event_queue_model)) {
@@ -78,8 +78,11 @@ class Event_dispatcher
             } catch (Throwable $e) {
                 log_message('error', 'Event Dispatcher: Model loaded but cannot be accessed: ' . $e->getMessage());
             }
-            
-            log_message('error', 'Event Dispatcher: Failed to load event_queue_model - model object not accessible after load');
+
+            log_message(
+                'error',
+                'Event Dispatcher: Failed to load event_queue_model - model object not accessible after load',
+            );
             return false;
         } catch (Throwable $e) {
             log_message('error', 'Event Dispatcher: Error loading event_queue_model: ' . $e->getMessage());
@@ -102,16 +105,19 @@ class Event_dispatcher
         try {
             // Verificar se a tabela existe antes de tentar carregar o modelo
             if (!$this->CI->db->table_exists('event_queue')) {
-                log_message('debug', 'Event Dispatcher: Cannot dispatch event "' . $eventName . '" - event_queue table does not exist');
+                log_message(
+                    'debug',
+                    'Event Dispatcher: Cannot dispatch event "' . $eventName . '" - event_queue table does not exist',
+                );
                 return;
             }
 
             // Carregar o modelo se necessário (o Loader verifica se já está carregado)
             $this->CI->load->model('event_queue_model');
-            
+
             // Acessar o modelo usando a mesma técnica da biblioteca Api
             $modelName = 'event_queue_model';
-            
+
             // Tentar acessar o modelo de diferentes formas
             try {
                 $model = $this->CI->{$modelName};
@@ -125,9 +131,12 @@ class Event_dispatcher
                     return;
                 }
             }
-            
+
             if (!is_object($model)) {
-                log_message('error', 'Event Dispatcher: event_queue_model is not an object after loading. Type: ' . gettype($model));
+                log_message(
+                    'error',
+                    'Event Dispatcher: event_queue_model is not an object after loading. Type: ' . gettype($model),
+                );
                 return;
             }
 
@@ -181,11 +190,11 @@ class Event_dispatcher
 
             // Carregar o modelo se necessário (o Loader verifica se já está carregado)
             $this->CI->load->model('event_queue_model');
-            
+
             // Acessar o modelo usando a mesma técnica da biblioteca Api
             $modelName = 'event_queue_model';
             $model = $this->CI->{$modelName};
-            
+
             if (!is_object($model)) {
                 log_message('error', 'Event Dispatcher: Cannot process queue - event_queue_model is not an object');
                 return;
@@ -197,11 +206,8 @@ class Event_dispatcher
         }
 
         $events = $model->get_pending($limit);
-        
-        log_message('error', 'Event Dispatcher - Found ' . count($events) . ' pending events to process');
 
         foreach ($events as $event) {
-            log_message('error', 'Event Dispatcher - Processing event ID: ' . $event['id'] . ', event_name: ' . $event['event_name']);
             $model->mark_processing($event['id']);
 
             try {
@@ -210,24 +216,18 @@ class Event_dispatcher
                     throw new Exception('Invalid JSON payload: ' . json_last_error_msg());
                 }
 
-                log_message('error', 'Event Dispatcher - Payload decoded successfully, keys: ' . implode(', ', array_keys($payload)));
                 $this->fire($event['event_name'], $payload);
-                log_message('error', 'Event Dispatcher - Event fired successfully, marking as processed');
                 $model->mark_processed($event['id']);
-                log_message('error', 'Event Dispatcher - Event ID ' . $event['id'] . ' marked as processed');
             } catch (Throwable $e) {
                 $model->mark_failed($event['id'], $e->getMessage());
                 log_message(
                     'error',
-                    'Event Dispatcher - Failed to process event (' .
-                        ($event['id'] ?? '-') .
-                        '): ' .
-                        $e->getMessage(),
+                    'Event Dispatcher - Failed to process event (' . ($event['id'] ?? '-') . '): ' . $e->getMessage(),
                 );
                 log_message('error', $e->getTraceAsString());
             }
         }
-        
+
         log_message('error', 'Event Dispatcher - Finished processing queue');
     }
 
@@ -243,7 +243,10 @@ class Event_dispatcher
     {
         $listeners = $this->get_listeners($eventName);
 
-        log_message('error', 'Event Dispatcher - Firing event: ' . $eventName . ' with ' . count($listeners) . ' listeners');
+        log_message(
+            'error',
+            'Event Dispatcher - Firing event: ' . $eventName . ' with ' . count($listeners) . ' listeners',
+        );
 
         foreach ($listeners as $listener) {
             try {
@@ -267,13 +270,13 @@ class Event_dispatcher
                         );
                     }
                 } else {
-                    log_message('error', 'Event Dispatcher - Listener class not found: ' . $listener . ' (file: ' . $listenerFile . ')');
+                    log_message(
+                        'error',
+                        'Event Dispatcher - Listener class not found: ' . $listener . ' (file: ' . $listenerFile . ')',
+                    );
                 }
             } catch (Throwable $e) {
-                log_message(
-                    'error',
-                    'Event Dispatcher - Listener ' . $listener . ' failed: ' . $e->getMessage(),
-                );
+                log_message('error', 'Event Dispatcher - Listener ' . $listener . ' failed: ' . $e->getMessage());
                 log_message('error', $e->getTraceAsString());
                 // Continue processing other listeners even if one fails
             }
@@ -294,4 +297,3 @@ class Event_dispatcher
         return $config[$eventName] ?? [];
     }
 }
-

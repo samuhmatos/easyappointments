@@ -1,7 +1,7 @@
 # CalDAV Calendar Sync
 
 This page will guide you through the local configuration of OpenLDAP and phpLDAPadmin, an Open Source LDAP server that 
-can be used to test the LDAP integration of Easy!Appointments.
+can be used to test the LDAP integration of MarcaAgora.
 
 > Note: This guide refers to the available Docker development configuration using docker-compose.yml
 
@@ -27,13 +27,13 @@ following credentials:
 
 After logging in, you will be able to manage the LDAP directory, add new LDAP entries and search the existing data. 
 
-## Enabling Integration in Easy!Appointments
+## Enabling Integration in MarcaAgora
 
-After making sure that the local OpenLDAP server works, Easy!Appointments will be able to connect to it.
+After making sure that the local OpenLDAP server works, MarcaAgora will be able to connect to it.
 
 For this you will need to go to the Backend > Settings > Integrations > LDAP and enable the integration from there. 
 
-This settings page also requires some configuration for Easy!Appointments to be able to connect to the server and pull
+This settings page also requires some configuration for MarcaAgora to be able to connect to the server and pull
 the right information.
 
 #### Host 
@@ -72,7 +72,7 @@ are prefilled within the LDAP import modal. This is a key-value json object.
 After the configuration of LDAP is complete, you can use the "search" function of the same settings page to look for 
 users (just submitting queries using the form). 
 
-If the filter was right, you will be getting LDAP entries displayed on screen that can be imported into Easy!Appointments.
+If the filter was right, you will be getting LDAP entries displayed on screen that can be imported into MarcaAgora.
 
 Clicking the "Import" button a modal with a user form will be opened, allowing you to import this entry and change their
 information before doing that. 
@@ -86,14 +86,14 @@ username are the same as in LDAP.
 
 ## LDAP SSO
 
-While SSO with LDAP on Easy!Appointments, the username will need to be matched for the SSO to work. Also, the LDAP DN 
+While SSO with LDAP on MarcaAgora, the username will need to be matched for the SSO to work. Also, the LDAP DN 
 value must be valid and pointing to the right record. 
 
 The LDAP DN is a value that can also be manually set, either from the UI or from the API. 
 
-If LDAP is enabled, Easy!Appointments will first try to check for the local credentials, but if this does not work, then 
+If LDAP is enabled, MarcaAgora will first try to check for the local credentials, but if this does not work, then 
 the app will try to check the password against the LDAP entry and log the user in.
 
-*This document applies to Easy!Appointments v1.5.1.*
+*This document applies to MarcaAgora v1.5.1.*
 
 [Back](readme.md)

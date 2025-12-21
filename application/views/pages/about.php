@@ -6,13 +6,13 @@
     <div id="about" class="col-lg-8 offset-lg-2">
 
         <div class="text-center my-5">
-            <img src="<?= base_url('assets/img/logo.png') ?>" alt="Easy!Appointments Logo" class="mb-5">
+            <img src="<?= base_url('assets/img/logo.png') ?>" alt="MarcaAgora Logo" class="mb-5">
 
             <h3>
-                Easy!Appointments
+                MarcaAgora
             </h3>
             <h6 class="text-primary">
-                Online Appointment Scheduler
+                Agendamento Online
             </h6>
         </div>
 

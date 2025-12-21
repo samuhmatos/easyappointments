@@ -1,7 +1,7 @@
 <?php defined('BASEPATH') or exit('No direct script access allowed');
 
 /* ----------------------------------------------------------------------------
- * Easy!Appointments - Online Appointment Scheduler
+ * MarcaAgora - Agendamento Online
  *
  * @package     EasyAppointments
  * @author      A.Tselegidis <alextselegidis@gmail.com>
@@ -76,7 +76,7 @@ class WhatsAppNotificationListener
             $this->CI->whatsapp_messages->send($customer['phone_number'], $message);
         }
         */
-        
+
         // Placeholder - log that WhatsApp notification would be sent
         log_message('debug', 'WhatsAppNotificationListener - Appointment saved event received (not yet implemented)');
     }
@@ -108,4 +108,3 @@ class WhatsAppNotificationListener
         return "Olá {$customer['first_name']}! Seu agendamento foi confirmado...";
     }
 }
-

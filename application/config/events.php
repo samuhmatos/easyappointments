@@ -1,7 +1,7 @@
 <?php defined('BASEPATH') or exit('No direct script access allowed');
 
 /* ----------------------------------------------------------------------------
- * Easy!Appointments - Online Appointment Scheduler
+ * MarcaAgora - Agendamento Online
  *
  * @package     EasyAppointments
  * @author      A.Tselegidis <alextselegidis@gmail.com>
@@ -36,11 +36,8 @@ $config['event_listeners'] = [
         'EmailNotificationListener',
         // 'WhatsAppNotificationListener', // Uncomment when WhatsApp is implemented
     ],
-    'appointment.updated' => [
-        'EmailNotificationListener',
-    ],
+    'appointment.updated' => ['EmailNotificationListener'],
 ];
 
 /* End of file events.php */
 /* Location: ./application/config/events.php */
-

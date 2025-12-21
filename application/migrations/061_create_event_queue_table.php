@@ -1,7 +1,7 @@
 <?php defined('BASEPATH') or exit('No direct script access allowed');
 
 /* ----------------------------------------------------------------------------
- * Easy!Appointments - Online Appointment Scheduler
+ * MarcaAgora - Agendamento Online
  *
  * @package     EasyAppointments
  * @author      A.Tselegidis <alextselegidis@gmail.com>
@@ -77,7 +77,7 @@ class Migration_Create_event_queue_table extends EA_Migration
             $this->dbforge->add_key('scheduled_at');
 
             $this->dbforge->create_table('event_queue', true, ['engine' => 'InnoDB']);
-            
+
             // Verificar se a tabela foi criada com sucesso antes de adicionar o índice
             if ($this->db->table_exists('event_queue')) {
                 try {
@@ -102,4 +102,3 @@ class Migration_Create_event_queue_table extends EA_Migration
         }
     }
 }
-

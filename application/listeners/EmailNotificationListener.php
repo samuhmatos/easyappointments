@@ -1,7 +1,7 @@
 <?php defined('BASEPATH') or exit('No direct script access allowed');
 
 /* ----------------------------------------------------------------------------
- * Easy!Appointments - Online Appointment Scheduler
+ * MarcaAgora - Agendamento Online
  *
  * @package     EasyAppointments
  * @author      A.Tselegidis <alextselegidis@gmail.com>
@@ -76,7 +76,7 @@ class EmailNotificationListener
     {
         try {
             log_message('error', 'EmailNotificationListener::handle_appointment_saved() called');
-            
+
             $current_language = config('language');
 
             $appointment = $payload['appointment'] ?? null;
@@ -87,18 +87,26 @@ class EmailNotificationListener
             $manage_mode = $payload['manage_mode'] ?? false;
 
             if (!$appointment || !$service || !$provider || !$customer || !$settings) {
-                throw new Exception('Missing required payload data: appointment=' . ($appointment ? 'ok' : 'missing') . 
-                    ', service=' . ($service ? 'ok' : 'missing') . 
-                    ', provider=' . ($provider ? 'ok' : 'missing') . 
-                    ', customer=' . ($customer ? 'ok' : 'missing') . 
-                    ', settings=' . ($settings ? 'ok' : 'missing'));
+                throw new Exception(
+                    'Missing required payload data: appointment=' .
+                        ($appointment ? 'ok' : 'missing') .
+                        ', service=' .
+                        ($service ? 'ok' : 'missing') .
+                        ', provider=' .
+                        ($provider ? 'ok' : 'missing') .
+                        ', customer=' .
+                        ($customer ? 'ok' : 'missing') .
+                        ', settings=' .
+                        ($settings ? 'ok' : 'missing'),
+                );
             }
 
             $customer_link = site_url('booking/reschedule/' . $appointment['hash']);
             $provider_link = site_url('calendar/reschedule/' . $appointment['hash']);
 
             // Use ICS stream from payload if available, otherwise generate it
-            $ics_stream = $payload['ics_stream'] ?? $this->CI->ics_file->get_stream($appointment, $service, $provider, $customer);
+            $ics_stream =
+                $payload['ics_stream'] ?? $this->CI->ics_file->get_stream($appointment, $service, $provider, $customer);
 
             // Notify customer.
             $send_customer =
@@ -125,7 +133,10 @@ class EmailNotificationListener
                         $ics_stream,
                         $customer['timezone'],
                     );
-                    log_message('error', 'EmailNotificationListener - Email sent successfully to customer: ' . $customer['email']);
+                    log_message(
+                        'error',
+                        'EmailNotificationListener - Email sent successfully to customer: ' . $customer['email'],
+                    );
                 } catch (Throwable $e) {
                     $this->log_exception($e, 'appointment-saved to customer', $appointment['id'] ?? null);
                 }
@@ -160,7 +171,10 @@ class EmailNotificationListener
                         $ics_stream,
                         $provider['timezone'],
                     );
-                    log_message('error', 'EmailNotificationListener - Email sent successfully to provider: ' . $provider['email']);
+                    log_message(
+                        'error',
+                        'EmailNotificationListener - Email sent successfully to provider: ' . $provider['email'],
+                    );
                 } catch (Throwable $e) {
                     $this->log_exception($e, 'appointment-saved to provider', $appointment['id'] ?? null);
                 }
@@ -397,9 +411,13 @@ class EmailNotificationListener
     {
         log_message(
             'error',
-            'EmailNotificationListener - Could not email ' . $message . ' (' . ($appointment_id ?? '-') . ') : ' . $e->getMessage(),
+            'EmailNotificationListener - Could not email ' .
+                $message .
+                ' (' .
+                ($appointment_id ?? '-') .
+                ') : ' .
+                $e->getMessage(),
         );
         log_message('error', $e->getTraceAsString());
     }
 }
-

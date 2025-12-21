@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
-    <title>Installation | Easy!Appointments</title>
+    <title>Installation | MarcaAgora</title>
 
     <link rel="icon" type="image/x-icon" href="<?= asset_url('assets/img/favicon.ico') ?>">
     <link rel="stylesheet" type="text/css" href="<?= asset_url('assets/css/themes/default.min.css') ?>">
@@ -17,20 +17,20 @@
 
 <header>
     <div class="container">
-        <h1 class="page-title">Easy!Appointments Installation</h1>
+        <h1 class="page-title">MarcaAgora Installation</h1>
     </div>
 </header>
 
 <div class="content container h-100">
     <div class="welcome">
-        <h3>Welcome to the Easy!Appointments installation page.</h3>
+        <h3>Welcome to the MarcaAgora installation page.</h3>
         <p>
-            This page will help you set the main settings of your Easy!Appointments installation. You will be able to
+            This page will help you set the main settings of your MarcaAgora installation. You will be able to
             edit these settings and many more in the backend session of your system. Remember to use the
             <strong class="text-primary"><?= site_url('user/login') ?></strong> URL to connect to the backend section
-            of Easy!Appointments.
+            of MarcaAgora.
 
-            If you face any problems during the usage of Easy!Appointments you can always check the
+            If you face any problems during the usage of MarcaAgora you can always check the
             <a href="https://easyappointments.org/docs.html">Documentation</a> and
             <a href="https://groups.google.com/group/easy-appointments">Support Group</a> for getting help. You may also
             submit new issues on
@@ -177,9 +177,9 @@
 
     <div class="mb-2">
         <h3>License</h3>
-        Easy!Appointments is licensed under the <span class="badge bg-secondary">GPL-3.0 license</span>. By using the
+        MarcaAgora is licensed under the <span class="badge bg-secondary">GPL-3.0 license</span>. By using the
         code
-        of Easy!Appointments in any way <br> you agree with the terms described in the following url:
+        of MarcaAgora in any way <br> you agree with the terms described in the following url:
         <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">https://www.gnu.org/licenses/gpl-3.0.en.html</a>
     </div>
 
@@ -187,12 +187,12 @@
 
     <button type="button" id="install" class="btn btn-primary">
         <i class="icon-white icon-ok me-2"></i>
-        Install Easy!Appointments
+        Install MarcaAgora
     </button>
 </div>
 
 <footer>
-    Powered by <a href="https://easyappointments.org">Easy!Appointments</a>
+    Feito Por <a href="https://marcaagora.com">MarcaAgora</a>
 </footer>
 
 <?php component('js_vars_script'); ?>

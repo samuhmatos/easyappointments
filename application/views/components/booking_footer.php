@@ -9,8 +9,8 @@
 <div id="frame-footer">
     <small>
         <span class="footer-powered-by small">
-            Powered By
-            <a href="https://easyappointments.org" target="_blank">Easy!Appointments</a>
+            Feito Por
+            <a href="https://marcaagora.com" target="_blank">MarcaAgora</a>
         </span>
 
         <span class="footer-options">

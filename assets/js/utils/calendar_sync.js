@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * Easy!Appointments - Online Appointment Scheduler
+ * MarcaAgora - Agendamento Online
  *
  * @package     EasyAppointments
  * @author      A.Tselegidis <alextselegidis@gmail.com>
@@ -52,7 +52,7 @@ App.Utils.CalendarSync = (function () {
 
         const redirectUrl = App.Utils.Url.siteUrl('google/oauth_callback');
 
-        const windowHandle = window.open(authUrl, 'Easy!Appointments', 'width=800, height=600');
+        const windowHandle = window.open(authUrl, 'MarcaAgora', 'width=800, height=600');
 
         const authInterval = window.setInterval(() => {
             // When the browser redirects to the Google user consent page the "window.document" variable

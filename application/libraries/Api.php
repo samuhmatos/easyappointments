@@ -3,7 +3,7 @@
 defined('BASEPATH') or exit('No direct script access allowed');
 
 /* ----------------------------------------------------------------------------
- * Easy!Appointments - Online Appointment Scheduler
+ * MarcaAgora - Agendamento Online
  *
  * @package     EasyAppointments
  * @author      A.Tselegidis <alextselegidis@gmail.com>
@@ -151,7 +151,7 @@ class Api
     #[NoReturn]
     public function request_authentication(): void
     {
-        header('WWW-Authenticate: Basic realm="Easy!Appointments"');
+        header('WWW-Authenticate: Basic realm="MarcaAgora"');
         header('HTTP/1.0 401 Unauthorized');
         exit('You are not authorized to use the API.');
     }

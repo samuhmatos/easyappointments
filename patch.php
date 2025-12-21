@@ -1,7 +1,7 @@
 <?php // Place this file in the root E!A directory and open it with the browser or execute in terminal.
 
 /* ----------------------------------------------------------------------------
- * Easy!Appointments - Patch Utility Script
+ * MarcaAgora - Patch Utility Script
  *
  * @package     EasyAppointmentsPatch
  * @version     1.0.0
@@ -9,7 +9,7 @@
  * @copyright   Copyright (c) 2013 - 2022, Alex Tselegidis
  * @license     https://opensource.org/licenses/GPL-3.0 - GPLv3
  * @link        https://easyappointments.org
- * @support     Easy!Appointments v1.x.x
+ * @support     MarcaAgora v1.x.x
  * ---------------------------------------------------------------------------- */
 
 // Config
@@ -32,7 +32,7 @@ function detect_local_version()
 
     if (!file_exists($config_file_path)) {
         die(
-            'Failed to detect the local Easy!Appointments version, please move the patch.php script in the root directory of your Easy!Appointments installation.'
+            'Failed to detect the local MarcaAgora version, please move the patch.php script in the root directory of your MarcaAgora installation.'
         );
     }
 
@@ -271,7 +271,7 @@ function get_new_patch_filenames($new_patches)
 
 // Run
 
-echo LINE_BREAK . '➜ Easy!Appointments - Patch Utility Script' . LINE_BREAK . LINE_BREAK;
+echo LINE_BREAK . '➜ MarcaAgora - Patch Utility Script' . LINE_BREAK . LINE_BREAK;
 
 $local_version = detect_local_version();
 

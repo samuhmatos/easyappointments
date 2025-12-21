@@ -55,7 +55,7 @@ $route['default_controller'] = 'booking';
 
 $route['404_override'] = '';
 
-$route['translate_uri_dashes'] = FALSE;
+$route['translate_uri_dashes'] = false;
 
 /*
 | -------------------------------------------------------------------------
@@ -64,7 +64,7 @@ $route['translate_uri_dashes'] = FALSE;
 | Set the appropriate headers so that iframe control and permissions are 
 | properly configured.
 |
-| Enable this if you want to disable use of Easy!Appointments within an 
+| Enable this if you want to disable use of MarcaAgora within an 
 | iframe.
 |
 | Options:
@@ -89,19 +89,16 @@ header('Access-Control-Allow-Origin: ' . ($_SERVER['HTTP_ORIGIN'] ?? '*')); // N
 
 header('Access-Control-Allow-Credentials: "true"');
 
-if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
-{
+if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
     // May also be using PUT, PATCH, HEAD etc
     header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD');
 }
 
-if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
-{
+if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
     header('Access-Control-Allow-Headers: ' . $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']);
 }
 
-if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS')
-{
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 

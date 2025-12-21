@@ -1,7 +1,7 @@
 <?php defined('BASEPATH') or exit('No direct script access allowed');
 
 /* ----------------------------------------------------------------------------
- * Easy!Appointments - Online Appointment Scheduler
+ * MarcaAgora - Agendamento Online
  *
  * @package     EasyAppointments
  * @author      A.Tselegidis <alextselegidis@gmail.com>
@@ -52,7 +52,7 @@ class Installation extends EA_Controller
     }
 
     /**
-     * Installs Easy!Appointments on the server.
+     * Installs MarcaAgora on the server.
      */
     public function perform(): void
     {

@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * Easy!Appointments - Online Appointment Scheduler
+ * MarcaAgora - Agendamento Online
  *
  * @package     EasyAppointments
  * @author      A.Tselegidis <alextselegidis@gmail.com>
@@ -72,7 +72,7 @@ App.Http.Caldav = (function () {
     }
 
     /**
-     * Trigger the sync process between Easy!Appointments and Caldav Calendar.
+     * Trigger the sync process between MarcaAgora and Caldav Calendar.
      *
      * @param {Number} providerId
      *

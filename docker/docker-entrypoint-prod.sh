@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # -----------------------------------------------------------------------------
-# Easy!Appointments - Docker Entrypoint para Produção
+# MarcaAgora - Docker Entrypoint para Produção
 # -----------------------------------------------------------------------------
 
 set -e
@@ -28,7 +28,7 @@ if [ -n "$MAIL_SMTP_HOST" ]; then
     cat <<EOF >/var/www/html/application/config/email.php
 <?php defined('BASEPATH') or exit('No direct script access allowed');
 
-\$config['useragent'] = 'Easy!Appointments';
+\$config['useragent'] = 'MarcaAgora';
 \$config['protocol'] = '${MAIL_PROTOCOL}';
 \$config['mailtype'] = 'html';
 \$config['smtp_debug'] = '${MAIL_SMTP_DEBUG}';

@@ -1,7 +1,7 @@
 <?php defined('BASEPATH') or exit('No direct script access allowed');
 
 /* ----------------------------------------------------------------------------
- * Easy!Appointments - Online Appointment Scheduler
+ * MarcaAgora - Agendamento Online
  *
  * @package     EasyAppointments
  * @author      A.Tselegidis <alextselegidis@gmail.com>
@@ -20,7 +20,7 @@
 | providing additional information on how to migrate your code to the latest   
 | codebase state. 
 |
-| Visit the Easy!Appointments Developers website for more information:  
+| Visit the MarcaAgora Developers website for more information:  
 |
 |   https://developers.easyappointments.org
 |

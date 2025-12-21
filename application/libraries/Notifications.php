@@ -1,7 +1,7 @@
 <?php defined('BASEPATH') or exit('No direct script access allowed');
 
 /* ----------------------------------------------------------------------------
- * Easy!Appointments - Online Appointment Scheduler
+ * MarcaAgora - Agendamento Online
  *
  * @package     EasyAppointments
  * @author      A.Tselegidis <alextselegidis@gmail.com>
@@ -64,19 +64,16 @@ class Notifications
             $ics_stream = $this->CI->ics_file->get_stream($appointment, $service, $provider, $customer);
 
             // Dispatch event asynchronously - listeners will handle the actual notifications
-            $this->CI->event_dispatcher->dispatch(
-                Event_dispatcher::EVENT_APPOINTMENT_SAVED,
-                [
-                    'event' => 'appointment.saved',
-                    'appointment' => $appointment,
-                    'service' => $service,
-                    'provider' => $provider,
-                    'customer' => $customer,
-                    'settings' => $settings,
-                    'manage_mode' => $manage_mode,
-                    'ics_stream' => $ics_stream,
-                ]
-            );
+            $this->CI->event_dispatcher->dispatch(Event_dispatcher::EVENT_APPOINTMENT_SAVED, [
+                'event' => 'appointment.saved',
+                'appointment' => $appointment,
+                'service' => $service,
+                'provider' => $provider,
+                'customer' => $customer,
+                'settings' => $settings,
+                'manage_mode' => $manage_mode,
+                'ics_stream' => $ics_stream,
+            ]);
         } catch (Throwable $e) {
             log_message(
                 'error',
@@ -114,18 +111,15 @@ class Notifications
             $this->CI->load->library('event_dispatcher');
 
             // Dispatch event asynchronously - listeners will handle the actual notifications
-            $this->CI->event_dispatcher->dispatch(
-                Event_dispatcher::EVENT_APPOINTMENT_DELETED,
-                [
-                    'event' => 'appointment.deleted',
-                    'appointment' => $appointment,
-                    'service' => $service,
-                    'provider' => $provider,
-                    'customer' => $customer,
-                    'settings' => $settings,
-                    'cancellation_reason' => $cancellation_reason,
-                ]
-            );
+            $this->CI->event_dispatcher->dispatch(Event_dispatcher::EVENT_APPOINTMENT_DELETED, [
+                'event' => 'appointment.deleted',
+                'appointment' => $appointment,
+                'service' => $service,
+                'provider' => $provider,
+                'customer' => $customer,
+                'settings' => $settings,
+                'cancellation_reason' => $cancellation_reason,
+            ]);
         } catch (Throwable $e) {
             log_message(
                 'error',
@@ -137,5 +131,4 @@ class Notifications
             log_message('error', $e->getTraceAsString());
         }
     }
-
 }

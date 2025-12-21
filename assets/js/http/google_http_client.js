@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * Easy!Appointments - Online Appointment Scheduler
+ * MarcaAgora - Agendamento Online
  *
  * @package     EasyAppointments
  * @author      A.Tselegidis <alextselegidis@gmail.com>
@@ -72,7 +72,7 @@ App.Http.Google = (function () {
     }
 
     /**
-     * Trigger the sync process between Easy!Appointments and Google Calendar.
+     * Trigger the sync process between MarcaAgora and Google Calendar.
      *
      * @param {Number} providerId
      *

@@ -1,7 +1,7 @@
 <?php defined('BASEPATH') or exit('No direct script access allowed');
 
 /* ----------------------------------------------------------------------------
- * Easy!Appointments - Online Appointment Scheduler
+ * MarcaAgora - Agendamento Online
  *
  * @package     EasyAppointments
  * @author      A.Tselegidis <alextselegidis@gmail.com>
@@ -16,7 +16,7 @@ require_once __DIR__ . '/../core/EA_Migration.php';
 /**
  * Instance library.
  *
- * Handles all Easy!Appointments instance related functionality.
+ * Handles all MarcaAgora instance related functionality.
  *
  * @package Libraries
  */

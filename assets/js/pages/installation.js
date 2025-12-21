@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * Easy!Appointments - Online Appointment Scheduler
+ * MarcaAgora - Agendamento Online
  *
  * @package     EasyAppointments
  * @author      A.Tselegidis <alextselegidis@gmail.com>
@@ -40,7 +40,7 @@ App.Pages.Installation = (function () {
     });
 
     /**
-     * Event: Install Easy!Appointments Button "Click"
+     * Event: Install MarcaAgora Button "Click"
      */
     $install.on('click', () => {
         if (!validate()) {
@@ -61,10 +61,7 @@ App.Pages.Installation = (function () {
             data: data,
             dataType: 'json',
         }).done(() => {
-            $alert
-                .text('Easy!Appointments has been successfully installed!')
-                .addClass('alert-success')
-                .prop('hidden', false);
+            $alert.text('MarcaAgora has been successfully installed!').addClass('alert-success').prop('hidden', false);
 
             setTimeout(() => {
                 window.location.href = App.Utils.Url.siteUrl('calendar');
