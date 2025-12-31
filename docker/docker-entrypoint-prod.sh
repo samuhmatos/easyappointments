@@ -6,6 +6,11 @@
 
 set -e
 
+# Exportar variáveis de ambiente do RabbitMQ (se não estiverem definidas, usar valores padrão)
+export RABBITMQ_USER="${RABBITMQ_USER:-guest}"
+export RABBITMQ_PASSWORD="${RABBITMQ_PASSWORD:-guest}"
+export RABBITMQ_URI="${RABBITMQ_URI:-amqp://guest:guest@localhost:5672}"
+
 # Criar config.php a partir de variáveis de ambiente
 cat <<EOF >/var/www/html/config.php
 <?php
@@ -20,6 +25,9 @@ class Config {
     const GOOGLE_SYNC_FEATURE   = ${GOOGLE_SYNC_FEATURE};
     const GOOGLE_CLIENT_ID      = '${GOOGLE_CLIENT_ID}';
     const GOOGLE_CLIENT_SECRET  = '${GOOGLE_CLIENT_SECRET}';
+    const RABBITMQ_USER         = '${RABBITMQ_USER:-guest}';
+    const RABBITMQ_PASSWORD     = '${RABBITMQ_PASSWORD:-guest}';
+    const RABBITMQ_URI          = '${RABBITMQ_URI:-amqp://guest:guest@localhost:5672}';
 }
 EOF
 

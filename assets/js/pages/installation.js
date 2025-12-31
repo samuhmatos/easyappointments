@@ -31,6 +31,8 @@ App.Pages.Installation = (function () {
     const $companyEmail = $('#company-email');
     const $companyLink = $('#company-link');
 
+    $phoneNumber.mask('(00) 00000-0000');
+
     $(document).ajaxStart(() => {
         $loading.removeClass('d-none');
     });

@@ -63,8 +63,10 @@ class Notifications
             // Generate ICS stream for calendar attachment
             $ics_stream = $this->CI->ics_file->get_stream($appointment, $service, $provider, $customer);
 
-            // Dispatch event asynchronously - listeners will handle the actual notifications
-            $this->CI->event_dispatcher->dispatch(Event_dispatcher::EVENT_APPOINTMENT_SAVED, [
+            log_message('debug', 'Notifications::notify_appointment_saved - dispatch_sync start');
+
+            // Dispatch synchronously so the listener publica na fila dentro da mesma requisição
+            $this->CI->event_dispatcher->dispatch_sync(Event_dispatcher::EVENT_APPOINTMENT_SAVED, [
                 'event' => 'appointment.saved',
                 'appointment' => $appointment,
                 'service' => $service,
@@ -110,8 +112,10 @@ class Notifications
         try {
             $this->CI->load->library('event_dispatcher');
 
-            // Dispatch event asynchronously - listeners will handle the actual notifications
-            $this->CI->event_dispatcher->dispatch(Event_dispatcher::EVENT_APPOINTMENT_DELETED, [
+            log_message('debug', 'Notifications::notify_appointment_deleted - dispatch_sync start');
+
+            // Dispatch synchronously para publicar na fila na mesma requisição
+            $this->CI->event_dispatcher->dispatch_sync(Event_dispatcher::EVENT_APPOINTMENT_DELETED, [
                 'event' => 'appointment.deleted',
                 'appointment' => $appointment,
                 'service' => $service,

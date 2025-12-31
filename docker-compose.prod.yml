@@ -32,6 +32,10 @@ services:
             - MAIL_FROM_ADDRESS=noreply@example.org
             - MAIL_FROM_NAME=EasyAppointments
             - MAIL_REPLY_TO_ADDRESS=noreply@example.org
+            # Configurações do RabbitMQ
+            - RABBITMQ_USER=guest
+            - RABBITMQ_PASSWORD=guest
+            - RABBITMQ_URI=amqp://guest:guest@host.docker.internal:5672/
         # volumes:
         # Volume para persistir dados (uploads, logs, etc)
         # - ./storage:/var/www/html/storage

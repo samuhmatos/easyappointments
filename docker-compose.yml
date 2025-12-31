@@ -4,6 +4,10 @@ services:
         working_dir: /var/www/html
         extra_hosts:
             - host.docker.internal:host-gateway
+        environment:
+            # RabbitMQ broker em outro docker-compose/host
+            # Ajuste conforme necessário (host.docker.internal funciona na maioria dos setups Docker Desktop/WSL)
+            - RABBITMQ_URI=amqp://guest:guest@host.docker.internal:5672/
         volumes:
             - '.:/var/www/html'
             - './docker/php-fpm/php-ini-overrides.ini:/usr/local/etc/php/conf.d/99-overrides.ini'

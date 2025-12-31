@@ -226,6 +226,9 @@ App.Pages.Admins = (function () {
                 App.Pages.Admins.select(id, true);
             }
         });
+
+        $phoneNumber.mask('(00) 00000-0000');
+        $mobileNumber.mask('(00) 00000-0000');
     }
 
     /**

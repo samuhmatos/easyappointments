@@ -39,6 +39,9 @@ App.Pages.Secretaries = (function () {
     let filterResults = {};
     let filterLimit = 20;
 
+    $phoneNumber.mask('(00) 00000-0000');
+    $mobileNumber.mask('(00) 00000-0000');
+
     /**
      * Add the page event listeners.
      */

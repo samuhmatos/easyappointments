@@ -176,6 +176,7 @@ App.Pages.Customers = (function () {
 
             App.Utils.Message.show(lang('delete_customer'), lang('delete_record_prompt'), buttons);
         });
+        $phoneNumber.mask('(00) 00000-0000');
     }
 
     /**

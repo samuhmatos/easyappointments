@@ -169,6 +169,7 @@ class Event_dispatcher
      */
     public function dispatch_sync(string $eventName, array $payload = []): void
     {
+        log_message('debug', 'Event_dispatcher::dispatch_sync - firing ' . $eventName);
         $this->fire($eventName, $payload);
     }
 

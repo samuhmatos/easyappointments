@@ -41,6 +41,7 @@ class EmailNotificationListener
         $this->CI->load->library('email_messages');
         $this->CI->load->library('ics_file');
         $this->CI->load->library('timezones');
+        $this->CI->load->library('rabbitmq_producer');
     }
 
     /**
@@ -54,7 +55,7 @@ class EmailNotificationListener
     {
         $event = $payload['event'] ?? null;
 
-        log_message('error', 'EmailNotificationListener::handle() called with event: ' . ($event ?? 'null'));
+        log_message('debug', 'EmailNotificationListener::handle() called with event: ' . ($event ?? 'null'));
 
         if ($event === 'appointment.saved') {
             $this->handle_appointment_saved($payload);
@@ -120,23 +121,38 @@ class EmailNotificationListener
                 $message = $manage_mode ? '' : lang('thank_you_for_appointment');
 
                 try {
-                    $this->CI->email_messages->send_appointment_saved(
-                        $appointment,
-                        $provider,
-                        $service,
-                        $customer,
-                        $settings,
-                        $subject,
-                        $message,
-                        $customer_link,
-                        $customer['email'],
-                        $ics_stream,
-                        $customer['timezone'],
-                    );
-                    log_message(
-                        'error',
-                        'EmailNotificationListener - Email sent successfully to customer: ' . $customer['email'],
-                    );
+                    // Prepare email notification data for RabbitMQ
+                    $emailData = [
+                        'type' => 'appointment.saved',
+                        'recipient_type' => 'customer',
+                        'recipient_email' => $customer['email'],
+                        'appointment' => $appointment,
+                        'provider' => $provider,
+                        'service' => $service,
+                        'customer' => $customer,
+                        'settings' => $settings,
+                        'subject' => $subject,
+                        'message' => $message,
+                        'appointment_link' => $customer_link,
+                        'ics_stream' => $ics_stream,
+                        'timezone' => $customer['timezone'],
+                    ];
+
+                    $success = $this->CI->rabbitmq_producer->send_email($emailData);
+
+                    if ($success) {
+                        log_message(
+                            'error',
+                            'EmailNotificationListener - Email sent to RabbitMQ queue for customer: ' .
+                                $customer['email'],
+                        );
+                    } else {
+                        log_message(
+                            'error',
+                            'EmailNotificationListener - Failed to send email to RabbitMQ queue for customer: ' .
+                                $customer['email'],
+                        );
+                    }
                 } catch (Throwable $e) {
                     $this->log_exception($e, 'appointment-saved to customer', $appointment['id'] ?? null);
                 }
@@ -158,23 +174,38 @@ class EmailNotificationListener
                 $message = $manage_mode ? '' : lang('appointment_link_description');
 
                 try {
-                    $this->CI->email_messages->send_appointment_saved(
-                        $appointment,
-                        $provider,
-                        $service,
-                        $customer,
-                        $settings,
-                        $subject,
-                        $message,
-                        $provider_link,
-                        $provider['email'],
-                        $ics_stream,
-                        $provider['timezone'],
-                    );
-                    log_message(
-                        'error',
-                        'EmailNotificationListener - Email sent successfully to provider: ' . $provider['email'],
-                    );
+                    // Prepare email notification data for RabbitMQ
+                    $emailData = [
+                        'type' => 'appointment.saved',
+                        'recipient_type' => 'provider',
+                        'recipient_email' => $provider['email'],
+                        'appointment' => $appointment,
+                        'provider' => $provider,
+                        'service' => $service,
+                        'customer' => $customer,
+                        'settings' => $settings,
+                        'subject' => $subject,
+                        'message' => $message,
+                        'appointment_link' => $provider_link,
+                        'ics_stream' => $ics_stream,
+                        'timezone' => $provider['timezone'],
+                    ];
+
+                    $success = $this->CI->rabbitmq_producer->send_email($emailData);
+
+                    if ($success) {
+                        log_message(
+                            'error',
+                            'EmailNotificationListener - Email sent to RabbitMQ queue for provider: ' .
+                                $provider['email'],
+                        );
+                    } else {
+                        log_message(
+                            'error',
+                            'EmailNotificationListener - Failed to send email to RabbitMQ queue for provider: ' .
+                                $provider['email'],
+                        );
+                    }
                 } catch (Throwable $e) {
                     $this->log_exception($e, 'appointment-saved to provider', $appointment['id'] ?? null);
                 }
@@ -196,19 +227,32 @@ class EmailNotificationListener
                 $message = $manage_mode ? '' : lang('appointment_link_description');
 
                 try {
-                    $this->CI->email_messages->send_appointment_saved(
-                        $appointment,
-                        $provider,
-                        $service,
-                        $customer,
-                        $settings,
-                        $subject,
-                        $message,
-                        $provider_link,
-                        $admin['email'],
-                        $ics_stream,
-                        $admin['timezone'],
-                    );
+                    // Prepare email notification data for RabbitMQ
+                    $emailData = [
+                        'type' => 'appointment.saved',
+                        'recipient_type' => 'admin',
+                        'recipient_email' => $admin['email'],
+                        'appointment' => $appointment,
+                        'provider' => $provider,
+                        'service' => $service,
+                        'customer' => $customer,
+                        'settings' => $settings,
+                        'subject' => $subject,
+                        'message' => $message,
+                        'appointment_link' => $provider_link,
+                        'ics_stream' => $ics_stream,
+                        'timezone' => $admin['timezone'],
+                    ];
+
+                    $success = $this->CI->rabbitmq_producer->send_email($emailData);
+
+                    if (!$success) {
+                        log_message(
+                            'error',
+                            'EmailNotificationListener - Failed to send email to RabbitMQ queue for admin: ' .
+                                $admin['email'],
+                        );
+                    }
                 } catch (Throwable $e) {
                     $this->log_exception($e, 'appointment-saved to admin', $appointment['id'] ?? null);
                 }
@@ -232,19 +276,32 @@ class EmailNotificationListener
                 $message = $manage_mode ? '' : lang('appointment_link_description');
 
                 try {
-                    $this->CI->email_messages->send_appointment_saved(
-                        $appointment,
-                        $provider,
-                        $service,
-                        $customer,
-                        $settings,
-                        $subject,
-                        $message,
-                        $provider_link,
-                        $secretary['email'],
-                        $ics_stream,
-                        $secretary['timezone'],
-                    );
+                    // Prepare email notification data for RabbitMQ
+                    $emailData = [
+                        'type' => 'appointment.saved',
+                        'recipient_type' => 'secretary',
+                        'recipient_email' => $secretary['email'],
+                        'appointment' => $appointment,
+                        'provider' => $provider,
+                        'service' => $service,
+                        'customer' => $customer,
+                        'settings' => $settings,
+                        'subject' => $subject,
+                        'message' => $message,
+                        'appointment_link' => $provider_link,
+                        'ics_stream' => $ics_stream,
+                        'timezone' => $secretary['timezone'],
+                    ];
+
+                    $success = $this->CI->rabbitmq_producer->send_email($emailData);
+
+                    if (!$success) {
+                        log_message(
+                            'error',
+                            'EmailNotificationListener - Failed to send email to RabbitMQ queue for secretary: ' .
+                                $secretary['email'],
+                        );
+                    }
                 } catch (Throwable $e) {
                     $this->log_exception($e, 'appointment-saved to secretary', $appointment['id'] ?? null);
                 }
@@ -287,16 +344,29 @@ class EmailNotificationListener
                 $this->CI->lang->load('translations');
 
                 try {
-                    $this->CI->email_messages->send_appointment_deleted(
-                        $appointment,
-                        $provider,
-                        $service,
-                        $customer,
-                        $settings,
-                        $provider['email'],
-                        $cancellation_reason,
-                        $provider['timezone'],
-                    );
+                    // Prepare email notification data for RabbitMQ
+                    $emailData = [
+                        'type' => 'appointment.deleted',
+                        'recipient_type' => 'provider',
+                        'recipient_email' => $provider['email'],
+                        'appointment' => $appointment,
+                        'provider' => $provider,
+                        'service' => $service,
+                        'customer' => $customer,
+                        'settings' => $settings,
+                        'cancellation_reason' => $cancellation_reason,
+                        'timezone' => $provider['timezone'],
+                    ];
+
+                    $success = $this->CI->rabbitmq_producer->send_email($emailData);
+
+                    if (!$success) {
+                        log_message(
+                            'error',
+                            'EmailNotificationListener - Failed to send cancellation email to RabbitMQ queue for provider: ' .
+                                $provider['email'],
+                        );
+                    }
                 } catch (Throwable $e) {
                     $this->log_exception($e, 'appointment-deleted to provider', $appointment['id'] ?? null);
                 }
@@ -311,16 +381,29 @@ class EmailNotificationListener
                 $this->CI->lang->load('translations');
 
                 try {
-                    $this->CI->email_messages->send_appointment_deleted(
-                        $appointment,
-                        $provider,
-                        $service,
-                        $customer,
-                        $settings,
-                        $customer['email'],
-                        $cancellation_reason,
-                        $customer['timezone'],
-                    );
+                    // Prepare email notification data for RabbitMQ
+                    $emailData = [
+                        'type' => 'appointment.deleted',
+                        'recipient_type' => 'customer',
+                        'recipient_email' => $customer['email'],
+                        'appointment' => $appointment,
+                        'provider' => $provider,
+                        'service' => $service,
+                        'customer' => $customer,
+                        'settings' => $settings,
+                        'cancellation_reason' => $cancellation_reason,
+                        'timezone' => $customer['timezone'],
+                    ];
+
+                    $success = $this->CI->rabbitmq_producer->send_email($emailData);
+
+                    if (!$success) {
+                        log_message(
+                            'error',
+                            'EmailNotificationListener - Failed to send cancellation email to RabbitMQ queue for customer: ' .
+                                $customer['email'],
+                        );
+                    }
                 } catch (Throwable $e) {
                     $this->log_exception($e, 'appointment-deleted to customer', $appointment['id'] ?? null);
                 }
@@ -338,16 +421,29 @@ class EmailNotificationListener
                 $this->CI->lang->load('translations');
 
                 try {
-                    $this->CI->email_messages->send_appointment_deleted(
-                        $appointment,
-                        $provider,
-                        $service,
-                        $customer,
-                        $settings,
-                        $admin['email'],
-                        $cancellation_reason,
-                        $admin['timezone'],
-                    );
+                    // Prepare email notification data for RabbitMQ
+                    $emailData = [
+                        'type' => 'appointment.deleted',
+                        'recipient_type' => 'admin',
+                        'recipient_email' => $admin['email'],
+                        'appointment' => $appointment,
+                        'provider' => $provider,
+                        'service' => $service,
+                        'customer' => $customer,
+                        'settings' => $settings,
+                        'cancellation_reason' => $cancellation_reason,
+                        'timezone' => $admin['timezone'],
+                    ];
+
+                    $success = $this->CI->rabbitmq_producer->send_email($emailData);
+
+                    if (!$success) {
+                        log_message(
+                            'error',
+                            'EmailNotificationListener - Failed to send cancellation email to RabbitMQ queue for admin: ' .
+                                $admin['email'],
+                        );
+                    }
                 } catch (Throwable $e) {
                     $this->log_exception($e, 'appointment-deleted to admin', $appointment['id'] ?? null);
                 }
@@ -369,16 +465,29 @@ class EmailNotificationListener
                 $this->CI->lang->load('translations');
 
                 try {
-                    $this->CI->email_messages->send_appointment_deleted(
-                        $appointment,
-                        $provider,
-                        $service,
-                        $customer,
-                        $settings,
-                        $secretary['email'],
-                        $cancellation_reason,
-                        $secretary['timezone'],
-                    );
+                    // Prepare email notification data for RabbitMQ
+                    $emailData = [
+                        'type' => 'appointment.deleted',
+                        'recipient_type' => 'secretary',
+                        'recipient_email' => $secretary['email'],
+                        'appointment' => $appointment,
+                        'provider' => $provider,
+                        'service' => $service,
+                        'customer' => $customer,
+                        'settings' => $settings,
+                        'cancellation_reason' => $cancellation_reason,
+                        'timezone' => $secretary['timezone'],
+                    ];
+
+                    $success = $this->CI->rabbitmq_producer->send_email($emailData);
+
+                    if (!$success) {
+                        log_message(
+                            'error',
+                            'EmailNotificationListener - Failed to send cancellation email to RabbitMQ queue for secretary: ' .
+                                $secretary['email'],
+                        );
+                    }
                 } catch (Throwable $e) {
                     $this->log_exception($e, 'appointment-deleted to secretary', $appointment['id'] ?? null);
                 }

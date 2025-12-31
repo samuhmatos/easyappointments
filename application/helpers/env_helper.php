@@ -32,6 +32,16 @@ if (!function_exists('env')) {
             throw new InvalidArgumentException('The $key argument cannot be empty.');
         }
 
-        return $_ENV[$key] ?? $default;
+        // Try $_ENV first, then getenv() as fallback
+        if (isset($_ENV[$key])) {
+            return $_ENV[$key];
+        }
+
+        $value = getenv($key);
+        if ($value !== false) {
+            return $value;
+        }
+
+        return $default;
     }
 }

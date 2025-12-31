@@ -142,7 +142,10 @@ function vendor(done) {
     );
 
     // jquery
-    gulp.src(['node_modules/jquery/dist/jquery.min.js']).pipe(gulp.dest('assets/vendor/jquery'));
+    gulp.src([
+        'node_modules/jquery/dist/jquery.min.js',
+        'node_modules/jquery-mask-plugin/dist/jquery.mask.min.js'
+    ]).pipe(gulp.dest('assets/vendor/jquery'));
 
     // jquery-jeditable
     gulp.src(['node_modules/jquery-jeditable/dist/jquery.jeditable.min.js']).pipe(

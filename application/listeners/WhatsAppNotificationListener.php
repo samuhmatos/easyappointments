@@ -32,8 +32,7 @@ class WhatsAppNotificationListener
     public function __construct()
     {
         $this->CI = &get_instance();
-        // TODO: Load WhatsApp library when implemented
-        // $this->CI->load->library('whatsapp_messages');
+        $this->CI->load->library('rabbitmq_producer');
     }
 
     /**
@@ -63,22 +62,46 @@ class WhatsAppNotificationListener
      */
     protected function handle_appointment_saved(array $payload): void
     {
-        // TODO: Implement WhatsApp notification logic
-        // Example structure:
-        /*
-        $appointment = $payload['appointment'];
-        $customer = $payload['customer'];
-        
-        if (!empty($customer['phone_number']) && 
-            filter_var($customer['whatsapp_notifications'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
-            
-            $message = $this->format_whatsapp_message($appointment, $customer);
-            $this->CI->whatsapp_messages->send($customer['phone_number'], $message);
-        }
-        */
+        try {
+            log_message('debug', 'WhatsAppNotificationListener::handle_appointment_saved() called');
 
-        // Placeholder - log that WhatsApp notification would be sent
-        log_message('debug', 'WhatsAppNotificationListener - Appointment saved event received (not yet implemented)');
+            $appointment = $payload['appointment'] ?? null;
+            $service = $payload['service'] ?? null;
+            $provider = $payload['provider'] ?? null;
+            $customer = $payload['customer'] ?? null;
+            $settings = $payload['settings'] ?? null;
+            $manage_mode = $payload['manage_mode'] ?? false;
+
+            if (!$appointment || !$service || !$provider || !$customer || !$settings) {
+                throw new Exception('Missing required payload data for WhatsApp notification');
+            }
+
+            // Prepare WhatsApp notification data for RabbitMQ
+            $whatsappData = [
+                'type' => 'appointment.saved',
+                'appointment' => $appointment,
+                'service' => $service,
+                'provider' => $provider,
+                'customer' => $customer,
+                'settings' => $settings,
+                'manage_mode' => $manage_mode,
+            ];
+
+            // Send to RabbitMQ queue
+            $success = $this->CI->rabbitmq_producer->send_whatsapp($whatsappData);
+
+            if ($success) {
+                log_message('debug', 'WhatsAppNotificationListener - WhatsApp notification sent to RabbitMQ queue');
+            } else {
+                log_message('error', 'WhatsAppNotificationListener - Failed to send WhatsApp notification to RabbitMQ');
+            }
+        } catch (Throwable $e) {
+            log_message(
+                'error',
+                'WhatsAppNotificationListener - Error handling appointment.saved: ' . $e->getMessage(),
+            );
+            log_message('error', 'WhatsAppNotificationListener - Stack trace: ' . $e->getTraceAsString());
+        }
     }
 
     /**
@@ -90,21 +113,51 @@ class WhatsAppNotificationListener
      */
     protected function handle_appointment_deleted(array $payload): void
     {
-        // TODO: Implement WhatsApp cancellation notification
-        log_message('debug', 'WhatsAppNotificationListener - Appointment deleted event received (not yet implemented)');
-    }
+        try {
+            log_message('debug', 'WhatsAppNotificationListener::handle_appointment_deleted() called');
 
-    /**
-     * Format WhatsApp message for appointment.
-     *
-     * @param array $appointment Appointment data.
-     * @param array $customer Customer data.
-     *
-     * @return string Formatted message.
-     */
-    protected function format_whatsapp_message(array $appointment, array $customer): string
-    {
-        // TODO: Implement message formatting
-        return "Olá {$customer['first_name']}! Seu agendamento foi confirmado...";
+            $appointment = $payload['appointment'] ?? null;
+            $service = $payload['service'] ?? null;
+            $provider = $payload['provider'] ?? null;
+            $customer = $payload['customer'] ?? null;
+            $settings = $payload['settings'] ?? null;
+            $cancellation_reason = $payload['cancellation_reason'] ?? '';
+
+            if (!$appointment || !$service || !$provider || !$customer || !$settings) {
+                throw new Exception('Missing required payload data for WhatsApp cancellation notification');
+            }
+
+            // Prepare WhatsApp notification data for RabbitMQ
+            $whatsappData = [
+                'type' => 'appointment.deleted',
+                'appointment' => $appointment,
+                'service' => $service,
+                'provider' => $provider,
+                'customer' => $customer,
+                'settings' => $settings,
+                'cancellation_reason' => $cancellation_reason,
+            ];
+
+            // Send to RabbitMQ queue
+            $success = $this->CI->rabbitmq_producer->send_whatsapp($whatsappData);
+
+            if ($success) {
+                log_message(
+                    'debug',
+                    'WhatsAppNotificationListener - WhatsApp cancellation notification sent to RabbitMQ queue',
+                );
+            } else {
+                log_message(
+                    'error',
+                    'WhatsAppNotificationListener - Failed to send WhatsApp cancellation notification to RabbitMQ',
+                );
+            }
+        } catch (Throwable $e) {
+            log_message(
+                'error',
+                'WhatsAppNotificationListener - Error handling appointment.deleted: ' . $e->getMessage(),
+            );
+            log_message('error', 'WhatsAppNotificationListener - Stack trace: ' . $e->getTraceAsString());
+        }
     }
 }

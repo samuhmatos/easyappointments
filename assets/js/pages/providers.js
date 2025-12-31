@@ -41,6 +41,9 @@ App.Pages.Providers = (function () {
     let filterLimit = 20;
     let workingPlanManager;
 
+    $phoneNumber.mask('(00) 00000-0000');
+    $mobileNumber.mask('(00) 00000-0000');
+
     /**
      * Add the page event listeners.
      */

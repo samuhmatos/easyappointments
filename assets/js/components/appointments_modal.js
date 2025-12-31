@@ -433,6 +433,8 @@ App.Components.AppointmentsModal = (function () {
             $customField4.val('');
             $customField5.val('');
         });
+
+        $phoneNumber.mask('(00) 00000-0000');
     }
 
     /**

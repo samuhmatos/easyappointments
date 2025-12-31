@@ -190,6 +190,8 @@ App.Pages.Account = (function () {
         $saveSettings.on('click', onSaveSettingsClick);
 
         $username.on('change', onUsernameChange);
+        $phoneNumber.mask('(00) 00000-0000');
+        $mobileNumber.mask('(00) 00000-0000');
     }
 
     document.addEventListener('DOMContentLoaded', initialize);
