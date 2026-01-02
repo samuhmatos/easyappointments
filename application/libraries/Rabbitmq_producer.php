@@ -39,11 +39,15 @@ class Rabbitmq_producer
     protected $channel = null;
 
     /**
-     * Queue names.
+     * Queue names and routing keys.
      */
-    // Queue names / routing keys expected by the consumer
-    const QUEUE_EMAIL = 'marcaagora.notification-email.send';
-    const QUEUE_WHATSAPP = 'marcaagora.notification-whatsapp.send';
+    // Queue names
+    const QUEUE_EMAIL = 'marcaagora.notification-email';
+    const QUEUE_WHATSAPP = 'marcaagora.notification-whatsapp';
+
+    // Routing keys
+    const ROUTING_KEY_EMAIL = 'marcaagora.notification-email.send';
+    const ROUTING_KEY_WHATSAPP = 'marcaagora.notification-whatsapp.send';
 
     // Exchange expected by the consumer
     const EXCHANGE = 'marcaagora';
@@ -107,13 +111,9 @@ class Rabbitmq_producer
             $vhost = isset($parsed['path']) && $parsed['path'] !== '/' ? ltrim($parsed['path'], '/') : '/';
 
             try {
-                log_message(
-                    'debug',
-                    'RabbitMQ Producer - Connecting to ' . $uri . " (host={$host}, port={$port}, vhost={$vhost})",
-                );
                 $this->connection = new AMQPStreamConnection($host, $port, $user, $pass, $vhost);
             } catch (Exception $e) {
-                log_message('error', 'RabbitMQ Producer - Failed to connect: ' . $e->getMessage());
+                log_message('error', 'RabbitMQ - Connection failed: ' . $e->getMessage());
                 throw new Exception('Failed to connect to RabbitMQ: ' . $e->getMessage());
             }
         }
@@ -138,23 +138,6 @@ class Rabbitmq_producer
     }
 
     /**
-     * Declare queue if it doesn't exist.
-     *
-     * @param string $queueName Queue name.
-     *
-     * @return void
-     * @throws Exception
-     */
-    protected function declare_queue(string $queueName): void
-    {
-        $channel = $this->get_channel();
-        // Exchange já existe no broker como 'topic'; não forçar re-declaração com outro tipo
-        $channel->exchange_declare(self::EXCHANGE, 'topic', false, true, false);
-        $channel->queue_declare($queueName, false, true, false, false);
-        $channel->queue_bind($queueName, self::EXCHANGE, $queueName);
-    }
-
-    /**
      * Send email notification to RabbitMQ queue.
      *
      * @param array $data Email notification data.
@@ -164,29 +147,19 @@ class Rabbitmq_producer
     public function send_email(array $data): bool
     {
         try {
-            $this->declare_queue(self::QUEUE_EMAIL);
-
             $channel = $this->get_channel();
-            log_message(
-                'debug',
-                'RabbitMQ Producer - Publishing email notification | exchange=' .
-                    self::EXCHANGE .
-                    ' routing_key=' .
-                    self::QUEUE_EMAIL,
-            );
             $message = new AMQPMessage(json_encode($data), [
                 'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT,
                 'content_type' => 'application/json',
             ]);
 
-            // Publish to the expected exchange using routing key = queue name
-            $channel->basic_publish($message, self::EXCHANGE, self::QUEUE_EMAIL);
+            // Publish to the existing exchange using the routing key
+            // The exchange and queue are expected to already exist
+            $channel->basic_publish($message, self::EXCHANGE, self::ROUTING_KEY_EMAIL);
 
-            log_message('debug', 'RabbitMQ Producer - Email notification sent to queue: ' . self::QUEUE_EMAIL);
             return true;
         } catch (Exception $e) {
-            log_message('error', 'RabbitMQ Producer - Failed to send email notification: ' . $e->getMessage());
-            log_message('error', 'RabbitMQ Producer - Stack trace: ' . $e->getTraceAsString());
+            log_message('error', 'RabbitMQ - Email notification failed: ' . $e->getMessage());
             return false;
         }
     }
@@ -201,29 +174,19 @@ class Rabbitmq_producer
     public function send_whatsapp(array $data): bool
     {
         try {
-            $this->declare_queue(self::QUEUE_WHATSAPP);
-
             $channel = $this->get_channel();
-            log_message(
-                'debug',
-                'RabbitMQ Producer - Publishing WhatsApp notification | exchange=' .
-                    self::EXCHANGE .
-                    ' routing_key=' .
-                    self::QUEUE_WHATSAPP,
-            );
             $message = new AMQPMessage(json_encode($data), [
                 'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT,
                 'content_type' => 'application/json',
             ]);
 
-            // Publish to the expected exchange using routing key = queue name
-            $channel->basic_publish($message, self::EXCHANGE, self::QUEUE_WHATSAPP);
+            // Publish to the existing exchange using the routing key
+            // The exchange and queue are expected to already exist
+            $channel->basic_publish($message, self::EXCHANGE, self::ROUTING_KEY_WHATSAPP);
 
-            log_message('debug', 'RabbitMQ Producer - WhatsApp notification sent to queue: ' . self::QUEUE_WHATSAPP);
             return true;
         } catch (Exception $e) {
-            log_message('error', 'RabbitMQ Producer - Failed to send WhatsApp notification: ' . $e->getMessage());
-            log_message('error', 'RabbitMQ Producer - Stack trace: ' . $e->getTraceAsString());
+            log_message('error', 'RabbitMQ - WhatsApp notification failed: ' . $e->getMessage());
             return false;
         }
     }
@@ -244,7 +207,7 @@ class Rabbitmq_producer
                 $this->channel = null;
             }
         } catch (Exception $e) {
-            log_message('error', 'RabbitMQ Producer - Error closing channel: ' . $e->getMessage());
+            log_message('error', 'RabbitMQ - Channel close error: ' . $e->getMessage());
         }
 
         try {
@@ -253,7 +216,7 @@ class Rabbitmq_producer
                 $this->connection = null;
             }
         } catch (Exception $e) {
-            log_message('error', 'RabbitMQ Producer - Error closing connection: ' . $e->getMessage());
+            log_message('error', 'RabbitMQ - Connection close error: ' . $e->getMessage());
         }
     }
 
